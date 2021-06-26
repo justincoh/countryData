@@ -3,6 +3,7 @@
 }
 .App {
   display: flex;
+  padding: 20px;
   flex-flow: row wrap;
 }
 .column {
@@ -10,7 +11,6 @@
 }
 
 .country-list {
-  padding: 40px;
   max-height: 100vh;
   overflow-y: scroll;
 }

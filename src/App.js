@@ -8,18 +8,15 @@ function App() {
   // const [countries, setCountries] = useState([]); // for dev
   const [countryMap, setCountryMap] = useState({});
   const [selectedCountry, _setSelectedCountry] = useState(null);
-  const [nameList, setNameList] = useState([]); // for display with proper case
+  const [countryNameList, setNameList] = useState([]); // for display with proper case
   // Simple wrapper so we don't have to care about string case
   const setSelectedCountry = (countryName) => _setSelectedCountry(countryName.toLowerCase());
 
   useEffect(() => {
     fetchCountryList()
-      .then((data) => {
-        window.countries = data; // for dev
-        // setCountries(data);
-        const mapObj = buildCountryMap(data);
-        setCountryMap(mapObj);
-        chooseRandomCountry(data);
+      .then((countryList) => {
+        window.countries = countryList; // for dev
+        buildInitialState(countryList)
       });
   }, []);
 
@@ -40,30 +37,33 @@ function App() {
     setSelectedCountry(selected.name);
   };
 
-  const buildCountryMap = (countryList) => {
+  const buildInitialState = (countryList) => {
     const mapObj = {};
+    const nameList = [];
 
     countryList.forEach(country => {
       mapObj[country.name.toLowerCase()] = country;
+      nameList.push(country.name);
     });
-    window.countryMap = mapObj;
-    return mapObj;
+
+    setCountryMap(mapObj);
+    setNameList(nameList);
+    chooseRandomCountry(countryList);
   };
 
   return (
     <div className="App">
       <div className="column country-list">
         <Typeahead
-          options={Object.keys(countryMap)}
+          options={countryNameList}
           selectedCountry={selectedCountry}
           setSelectedCountry={setSelectedCountry}
         />
-        { Object.keys(countryMap).map((countryName) => (
+        { countryNameList.map((countryName) => (
           <p onClick={() => setSelectedCountry(countryName)} >{countryName}</p>
         ))}
       </div>
       <div className="column flag-display">
-        <p>Selected: {selectedCountry}</p>
         <img id="flag" width="250" src={countryMap[selectedCountry]?.flag} />
         <Country country={countryMap[selectedCountry]} />
       </div>

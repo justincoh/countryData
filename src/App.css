@@ -15,8 +15,39 @@
   overflow-y: scroll;
 }
 
+.width-100 {
+  width: 100%;
+}
+
 #flag {
   border: 1px solid gray;
+}
+
+.typeahead-input {
+  border: 0;
+  border-bottom: 1px solid;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 5px;
+}
+
+.typeahead-container {
+  border: 1px solid black;
+  max-height: 50vh;
+  max-width: 300px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.country-dropdown-option {
+  border-bottom: 1px solid gray;
+  cursor: pointer;
+  margin: 0;
+  padding: 5px;
+}
+
+.country-dropdown-option:hover {
+  background-color: lightgray;
 }
 
 @keyframes App-logo-spin {

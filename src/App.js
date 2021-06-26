@@ -53,19 +53,16 @@ function App() {
 
   return (
     <div className="App">
+      <div className="column flag-display">
+        <img id="flag" width="250" src={countryMap[selectedCountry]?.flag} />
+        <Country country={countryMap[selectedCountry]} />
+      </div>
       <div className="column country-list">
         <Typeahead
           options={countryNameList}
           selectedCountry={selectedCountry}
           setSelectedCountry={setSelectedCountry}
         />
-        { countryNameList.map((countryName) => (
-          <p onClick={() => setSelectedCountry(countryName)} >{countryName}</p>
-        ))}
-      </div>
-      <div className="column flag-display">
-        <img id="flag" width="250" src={countryMap[selectedCountry]?.flag} />
-        <Country country={countryMap[selectedCountry]} />
       </div>
     </div>
   );

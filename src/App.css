@@ -71,3 +71,22 @@
     transform: rotate(360deg);
   }
 }
+
+@media screen and (max-width: 768px) {
+  .column {
+    margin: 5px 0;
+    width: 100%;
+  }
+
+  .leaflet-container {
+    width: 100%;
+  }
+
+  p {
+    margin: 5px 0;
+  }
+
+  .typeahead-container {
+    overflow: visible;
+  }
+}

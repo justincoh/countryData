@@ -32,6 +32,7 @@
   border-bottom: 1px solid;
   border-radius: 0;
   box-shadow: none;
+  font-size: 16px; /* to prevent ios auto-zoom */
   padding: 5px;
 }
 
@@ -59,8 +60,9 @@
 }
 
 .leaflet-container {
-  width: 50%;
+  border: 1px solid black;
   height: 500px;
+  width: 50%;
 }
 
 @keyframes App-logo-spin {
@@ -78,7 +80,16 @@
     width: 100%;
   }
 
+  #flag {
+    width: 100%;
+  }
+
+  .flex-container {
+    flex-direction: column-reverse;
+  }
+
   .leaflet-container {
+    max-height: 33vh;
     width: 100%;
   }
 
@@ -87,6 +98,7 @@
   }
 
   .typeahead-container {
+    max-width: 100%;
     overflow: visible;
   }
 }

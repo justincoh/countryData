@@ -9,7 +9,7 @@ const TypeaheadOptions = ({options, filterValue}) => {
   return (
     <>
       {filterOptions().map(opt => (
-        <option value={opt} key={opt} className="country-dropdown-option">{opt}</option>
+        <p value={opt} key={opt} className="country-dropdown-option">{opt}</p>
       ))}
     </>
   );

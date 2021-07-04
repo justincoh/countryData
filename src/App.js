@@ -77,7 +77,11 @@ function App() {
                 <Country country={selectedCountryObj} />
               </>
             </div>
-            {center && <Map latitude={center[0]} longitude={center[1]} /> }
+            {center && <Map
+              country={selectedCountryObj}
+              latitude={center[0]}
+              longitude={center[1]}
+            /> }
             <div className="column country-list">
               <Typeahead
                 options={countryNameList}

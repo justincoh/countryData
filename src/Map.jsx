@@ -1,4 +1,3 @@
-import { useEffect, createRef } from "react";
 import {
   MapContainer,
   Marker,
@@ -9,47 +8,38 @@ import {
 import "leaflet/dist/leaflet.css"
 
 
-const Map = ({latitude, longitude}) => {
-  const mapRef = createRef();
-
-  useEffect(() => {
-    console.log("Use effect lat lng: ", latitude, longitude);
-  }, [latitude, longitude])
-
-  const TestFunc = () => {
+const Map = ({latitude, longitude, country}) => {
+  const FlyTo = () => {
     const map = useMap();
-    window.map = map;
-    console.log("map IN CHILD: ", map);
+    const zoomLevel = zoomSwitcher(country.area);
 
     // [lat, lng], zoomLevel, duration in seconds
-    map.flyTo([latitude, longitude], 5, { duration: 2 })
+    map.flyTo([latitude, longitude], zoomLevel, { duration: 2 })
+
     return null;
   };
 
-  // const flyTo = ({lat, lng}) => {
-  //   const { current = {}} = mapRef;
-  //   if (!current) { return; }
-  //
-  //   const { leafletElement: map } = current;
-  //
-  //   map.flyTo([lat, lng], 6, { duration: 2 });
-  // };
+  const zoomSwitcher = (area) => {
+    if (!area) { return 6; }
+    if (area < 1) { return 12; }
+    if (area < 1000) { return 10; }
+    if (area < 100000) { return 8; }
+    if (area < 1000000) { return 6; }
+    if (area <= 10000000) { return 4; }
+    if (area > 10000000) { return 2; }
+  }
 
-
-  console.log("lat at render: ", latitude);
-  console.log("lng at render: ", longitude);
   return (
     <MapContainer
       center={[latitude || 10, longitude || 10]}
-      zoom={8}
-      ref={mapRef}
+      zoom={4}
       scrollWheelZoom={true}
     >
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <TestFunc />
+      <FlyTo />
       {/*<Marker position={[lat, lng]}>*/}
       {/*  <Popup>*/}
       {/*    A pretty CSS3 popup. <br/> Easily customizable.*/}

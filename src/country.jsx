@@ -6,6 +6,7 @@ const Country = ({country}) => {
   // things to care about:
   // name, capital, population, demonym, subregion, languages
   const infoToDisplay = [
+    "area",
     "capital",
     "demonym",
     "languages",

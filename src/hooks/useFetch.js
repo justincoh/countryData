@@ -2,13 +2,11 @@ import { useState } from "react";
 
 function useFetch(baseUrl) {
   const [isFetching, setIsFetching] = useState(false);
-  const [fetchError, setFetchError] = useState(null);
-  const [fetchData, setFetchData] = useState(null);
 
   const get = async (
     url,
     method = "GET",
-    // headers = { "Content-Type": "application/json" },
+    // headers = { "Content-Type": "application/json" }, // was causing a CORS error
     headers = {},
     options
   ) => {

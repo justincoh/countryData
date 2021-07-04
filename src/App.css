@@ -44,8 +44,11 @@
   overflow-y: scroll;
 }
 
+.country-dropdown {
+  border-bottom: 1px solid black;
+}
+
 .country-dropdown-option {
-  /*border-bottom: 1px solid gray;*/
   cursor: pointer;
   margin: 0;
   padding: 5px;

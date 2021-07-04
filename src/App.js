@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { API_BASE_URL } from "./constants";
 import Country from "./country";
 import Typeahead from "./typeahead";
+import Loader from "./loader";
 import useFetch from "./hooks/useFetch";
 import Map from "./Map";
 
 function App() {
-  // const [countries, setCountries] = useState([]); // for dev
   const [countryMap, setCountryMap] = useState({});
   const [selectedCountry, _setSelectedCountry] = useState(null);
   const [countryNameList, setNameList] = useState([]); // for display with proper case
@@ -24,17 +24,9 @@ function App() {
       });
   }, []);
 
-  useEffect(() => {
-    console.log("selected changed: ", selectedCountry);
-  }, [selectedCountry])
-
   const fetchCountryList = async () => {
     const res = await get("/all")
     return res;
-
-    // const res = await fetch(`${API_BASE_URL}/all`);
-    // const json = await res.json();
-    // return json;
   }
 
   const chooseRandomCountry = (countryList) => {
@@ -63,11 +55,10 @@ function App() {
   if (selectedCountryObj) {
     center = selectedCountryObj.latlng;
   }
-  console.log("SelectedCountryObj: ", selectedCountryObj);
 
   return (
     <div className="App">
-      { isFetching && <h1>FETCHING</h1>}
+      { isFetching && <Loader />}
       { !isFetching && (
         <>
           <div className="flex-container">
@@ -94,6 +85,6 @@ function App() {
       )}
     </div>
   );
-}
+};
 
 export default App;

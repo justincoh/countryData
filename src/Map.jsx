@@ -5,7 +5,6 @@ import {
   TileLayer,
   useMap,
 } from "react-leaflet";
-import "leaflet/dist/leaflet.css"
 
 
 const Map = ({latitude, longitude, country}) => {
@@ -23,7 +22,8 @@ const Map = ({latitude, longitude, country}) => {
     if (!area) { return 6; }
     if (area < 1) { return 12; }
     if (area < 1000) { return 10; }
-    if (area < 100000) { return 8; }
+    if (area < 50000) { return 8; }
+    if (area < 100000) { return 7; }
     if (area < 1000000) { return 6; }
     if (area <= 10000000) { return 4; }
     if (area > 10000000) { return 2; }
@@ -31,7 +31,7 @@ const Map = ({latitude, longitude, country}) => {
 
   return (
     <MapContainer
-      center={[latitude || 10, longitude || 10]}
+      center={[latitude, longitude]}
       zoom={4}
       scrollWheelZoom={true}
     >

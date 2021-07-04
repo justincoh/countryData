@@ -2,13 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
-import AppWithFetch from './AppWithEffectFetch';
 // import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
   <React.StrictMode>
     <App />
-    {/*<AppWithFetch />*/}
   </React.StrictMode>,
   document.getElementById('root')
 );

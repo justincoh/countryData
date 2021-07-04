@@ -1,8 +1,5 @@
-
 // Uses filter value to display only the options that match
 const TypeaheadOptions = ({options, filterValue}) => {
-  console.log(filterValue);
-
   const filterOptions = () => {
     if (!filterValue) return options;
 
@@ -12,7 +9,7 @@ const TypeaheadOptions = ({options, filterValue}) => {
   return (
     <>
       {filterOptions().map(opt => (
-        <p key={opt} className="country-dropdown-option">{opt}</p>
+        <option value={opt} key={opt} className="country-dropdown-option">{opt}</option>
       ))}
     </>
   );

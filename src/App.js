@@ -3,12 +3,16 @@ import { useEffect, useState } from "react";
 import { API_BASE_URL } from "./constants";
 import Country from "./country";
 import Typeahead from "./typeahead";
+import useFetch from "./hooks/useFetch";
+import Map from "./Map";
 
 function App() {
   // const [countries, setCountries] = useState([]); // for dev
   const [countryMap, setCountryMap] = useState({});
   const [selectedCountry, _setSelectedCountry] = useState(null);
   const [countryNameList, setNameList] = useState([]); // for display with proper case
+  const { isFetching, get } = useFetch(`${API_BASE_URL}`);
+
   // Simple wrapper so we don't have to care about string case
   const setSelectedCountry = (countryName) => _setSelectedCountry(countryName.toLowerCase());
 
@@ -21,13 +25,16 @@ function App() {
   }, []);
 
   useEffect(() => {
-    console.log("selected changed: ", selectedCountry)
+    console.log("selected changed: ", selectedCountry);
   }, [selectedCountry])
 
   const fetchCountryList = async () => {
-    const res = await fetch(`${API_BASE_URL}/all`);
-    const json = await res.json();
-    return json;
+    const res = await get("/all")
+    return res;
+
+    // const res = await fetch(`${API_BASE_URL}/all`);
+    // const json = await res.json();
+    // return json;
   }
 
   const chooseRandomCountry = (countryList) => {
@@ -51,19 +58,35 @@ function App() {
     chooseRandomCountry(countryList);
   };
 
+  const selectedCountryObj = countryMap[selectedCountry];
+  console.log("SelectedCountryObj: ", selectedCountryObj);
+
   return (
     <div className="App">
-      <div className="column flag-display">
-        <img id="flag" width="250" src={countryMap[selectedCountry]?.flag} />
-        <Country country={countryMap[selectedCountry]} />
-      </div>
-      <div className="column country-list">
-        <Typeahead
-          options={countryNameList}
-          selectedCountry={selectedCountry}
-          setSelectedCountry={setSelectedCountry}
-        />
-      </div>
+      { isFetching && <h1>FETCHING</h1>}
+      { !isFetching && (
+        <>
+          <div className="flex-container">
+            <div className="column flag-display">
+              <>
+                <img id="flag" width="250" src={selectedCountryObj?.flag} />
+                <Country country={selectedCountryObj} />
+              </>
+            </div>
+            <div className="column country-list">
+              <Typeahead
+                options={countryNameList}
+                selectedCountry={selectedCountry}
+                setSelectedCountry={setSelectedCountry}
+              />
+            </div>
+          </div>
+          <Map
+            latitude={selectedCountryObj?.latlng[0]}
+            longitude={selectedCountryObj?.latlng[1]}
+          />
+        </>
+      )}
     </div>
   );
 }

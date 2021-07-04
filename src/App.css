@@ -2,10 +2,14 @@
   box-sizing: border-box;
 }
 .App {
-  display: flex;
   padding: 20px;
+}
+
+.flex-container {
+  display: flex;
   flex-flow: row wrap;
 }
+
 .column {
   width: 49%;
 }
@@ -33,14 +37,15 @@
 
 .typeahead-container {
   border: 1px solid black;
-  max-height: 50vh;
+  border-bottom: 0;
+  max-height: 100vh;
   max-width: 300px;
   overflow-x: hidden;
   overflow-y: scroll;
 }
 
 .country-dropdown-option {
-  border-bottom: 1px solid gray;
+  /*border-bottom: 1px solid gray;*/
   cursor: pointer;
   margin: 0;
   padding: 5px;
@@ -48,6 +53,11 @@
 
 .country-dropdown-option:hover {
   background-color: lightgray;
+}
+
+.leaflet-container {
+  width: 50%;
+  height: 500px;
 }
 
 @keyframes App-logo-spin {

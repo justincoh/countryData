@@ -14,26 +14,26 @@ const Map = ({latitude, longitude}) => {
 
   useEffect(() => {
     console.log("Use effect lat lng: ", latitude, longitude);
-    // if (latitude && longitude) {
-    //   flyTo({ lat: latitude, lng: longitude});
-    // }
   }, [latitude, longitude])
 
-  const TestFunc = (props) => {
+  const TestFunc = () => {
     const map = useMap();
+    window.map = map;
     console.log("map IN CHILD: ", map);
+
+    // [lat, lng], zoomLevel, duration in seconds
+    map.flyTo([latitude, longitude], 5, { duration: 2 })
     return null;
   };
 
-  const flyTo = ({lat, lng}) => {
-    const { current = {}} = mapRef;
-    if (!current) { return; }
-
-    const { leafletElement: map } = current;
-
-    // [lat, lng], zoomLevel, duration in seconds
-    map.flyTo([lat, lng], 6, { duration: 2 });
-  };
+  // const flyTo = ({lat, lng}) => {
+  //   const { current = {}} = mapRef;
+  //   if (!current) { return; }
+  //
+  //   const { leafletElement: map } = current;
+  //
+  //   map.flyTo([lat, lng], 6, { duration: 2 });
+  // };
 
 
   console.log("lat at render: ", latitude);

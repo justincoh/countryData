@@ -2,7 +2,7 @@ const yieldSelf = n => n;
 
 // only mapping things I care about displaying
 const displayFuncs = {
-  "area": n => n.toLocaleString() + " km²",
+  "area": n => n? n.toLocaleString() + " km²" : "--",
   "capital": yieldSelf,
   "demonym": yieldSelf,
   "languages": (langArr) => {
@@ -11,7 +11,7 @@ const displayFuncs = {
   },
   "name": yieldSelf,
   "nativeName": yieldSelf,
-  "population": n => n.toLocaleString(),
+  "population": n => n ? n.toLocaleString() : "unknown",
   "subregion": yieldSelf,
 };
 

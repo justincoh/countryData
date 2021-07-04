@@ -58,7 +58,11 @@ function App() {
     chooseRandomCountry(countryList);
   };
 
-  const selectedCountryObj = countryMap[selectedCountry];
+  const selectedCountryObj = countryMap[selectedCountry] || {};
+  let center = null;
+  if (selectedCountryObj) {
+    center = selectedCountryObj.latlng;
+  }
   console.log("SelectedCountryObj: ", selectedCountryObj);
 
   return (
@@ -73,6 +77,7 @@ function App() {
                 <Country country={selectedCountryObj} />
               </>
             </div>
+            {center && <Map latitude={center[0]} longitude={center[1]} /> }
             <div className="column country-list">
               <Typeahead
                 options={countryNameList}
@@ -81,10 +86,6 @@ function App() {
               />
             </div>
           </div>
-          <Map
-            latitude={selectedCountryObj?.latlng[0]}
-            longitude={selectedCountryObj?.latlng[1]}
-          />
         </>
       )}
     </div>

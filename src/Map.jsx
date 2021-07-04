@@ -1,34 +1,60 @@
-import { useEffect, useState } from "react";
-import {MapContainer, Marker, Popup, TileLayer} from "react-leaflet";
+import { useEffect, createRef } from "react";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css"
 
 
 const Map = ({latitude, longitude}) => {
-  const [lat, setLat] = useState(latitude);
-  const [lng, setLng] = useState(longitude);
+  const mapRef = createRef();
 
   useEffect(() => {
     console.log("Use effect lat lng: ", latitude, longitude);
-    setLat(latitude);
-    setLng(longitude);
+    // if (latitude && longitude) {
+    //   flyTo({ lat: latitude, lng: longitude});
+    // }
   }, [latitude, longitude])
 
+  const TestFunc = (props) => {
+    const map = useMap();
+    console.log("map IN CHILD: ", map);
+    return null;
+  };
 
-  if (!lat || !lng) { return null; }
+  const flyTo = ({lat, lng}) => {
+    const { current = {}} = mapRef;
+    if (!current) { return; }
 
-  console.log("lat at render: ", lat);
-  console.log("lng at render: ", lng);
+    const { leafletElement: map } = current;
+
+    // [lat, lng], zoomLevel, duration in seconds
+    map.flyTo([lat, lng], 6, { duration: 2 });
+  };
+
+
+  console.log("lat at render: ", latitude);
+  console.log("lng at render: ", longitude);
   return (
-    <MapContainer center={{lat, lng}} zoom={8} scrollWheelZoom={true}>
+    <MapContainer
+      center={[latitude || 10, longitude || 10]}
+      zoom={8}
+      ref={mapRef}
+      scrollWheelZoom={true}
+    >
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Marker position={[lat, lng]}>
-        <Popup>
-          A pretty CSS3 popup. <br/> Easily customizable.
-        </Popup>
-      </Marker>
+      <TestFunc />
+      {/*<Marker position={[lat, lng]}>*/}
+      {/*  <Popup>*/}
+      {/*    A pretty CSS3 popup. <br/> Easily customizable.*/}
+      {/*  </Popup>*/}
+      {/*</Marker>*/}
     </MapContainer>
   );
 };

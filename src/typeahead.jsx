@@ -32,14 +32,14 @@ const Typeahead = ({ options, selectedCountry, setSelectedCountry }) => {
     onOptionSelection(inputVal);
   }
 
-  const onBlur = (e) => {
-    console.log("on blur: ", e.target);
-    if (e.target.id === inputId) { // doesn't work, still triggers on any click anywhere
-      return;
-    }
-
-    cancel();
-  }
+  // const onBlur = (e) => {
+  //   console.log("on blur: ", e.target);
+  //   if (e.target.id === inputId) { // doesn't work, still triggers on any click anywhere
+  //     return;
+  //   }
+  //
+  //   cancel();
+  // }
 
   return (
     <div className="typeahead-container">

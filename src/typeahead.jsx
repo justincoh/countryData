@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, createRef } from "react";
 import TypeaheadOptions from "./typeaheadOptions";
 
 const Typeahead = ({ options, selectedCountry, setSelectedCountry }) => {
@@ -6,15 +6,15 @@ const Typeahead = ({ options, selectedCountry, setSelectedCountry }) => {
   const [focused, setFocused] = useState(false);
   const inputId = "typeahead-input";
 
+  const inputRef = createRef();
+
   const onOptionSelection = (countryName) => {
-    console.log("on option selection")
     setInputVal(countryName);
     setSelectedCountry(countryName);
     setFocused(false);
   };
 
   const cancel = () => {
-    // setInputVal(selectedCountry);
     setFocused(false);
   };
 
@@ -32,14 +32,10 @@ const Typeahead = ({ options, selectedCountry, setSelectedCountry }) => {
     onOptionSelection(inputVal);
   }
 
-  // const onBlur = (e) => {
-  //   console.log("on blur: ", e.target);
-  //   if (e.target.id === inputId) { // doesn't work, still triggers on any click anywhere
-  //     return;
-  //   }
-  //
-  //   cancel();
-  // }
+  const clearInput = () => {
+    setInputVal("");
+    inputRef.current.focus();
+  }
 
   return (
     <div className="typeahead-container">
@@ -47,16 +43,22 @@ const Typeahead = ({ options, selectedCountry, setSelectedCountry }) => {
         tabIndex="1"
         type="text"
         id={inputId}
-        className="typeahead-input width-100"
+        className="typeahead-input"
         placeholder="Choose a country"
         value={inputVal}
         onChange={onChange}
         onKeyDown={onKeyDown}
         onKeyPress={onKeyPress}
-        // onMouseDown={() => console.log("on mouse down")}
         onFocus={() => setFocused(true)}
-        // onBlur={onBlur}  onblur intercepts the on mouse down even?
+        ref={inputRef}
+        // onBlur={onBlur}  onblur intercepts even the onMouseDown?
       />
+      {inputVal?.length > 0 && (
+        <div
+          className="clear-input"
+          onClick={clearInput}
+        >X</div>
+      )}
       { focused && (
         <div
           className="country-dropdown width-100"

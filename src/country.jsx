@@ -23,7 +23,7 @@ const keyDisplayNames = {
   "name": "Name",
   "nativeName": "Native Name",
   "population": "Population",
-  "subregion": "Sub-region",
+  "subregion": "Region",
 };
 
 

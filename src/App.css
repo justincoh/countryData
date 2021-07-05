@@ -19,30 +19,37 @@
   overflow-y: scroll;
 }
 
-.width-100 {
-  width: 100%;
-}
-
 #flag {
   border: 1px solid gray;
 }
 
 .typeahead-input {
   border: 0;
-  border-bottom: 1px solid;
   border-radius: 0;
   box-shadow: none;
   font-size: 16px; /* to prevent ios auto-zoom */
+  outline: none; /* to prevent outline color on focus */
   padding: 5px;
+  width: 90%;
 }
 
 .typeahead-container {
   border: 1px solid black;
-  border-bottom: 0;
-  max-height: 100vh;
-  max-width: 300px;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
   overflow-x: hidden;
   overflow-y: scroll;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+.clear-input {
+  align-self: center;
+  text-align: center;
+  width: 10%;
 }
 
 .country-dropdown {

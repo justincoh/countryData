@@ -3,7 +3,7 @@ const TypeaheadOptions = ({options, filterValue}) => {
   const filterOptions = () => {
     if (!filterValue) return options;
 
-    // easy way to strip things that break regex
+    // low-budget string sanitization so '(' don't break the regex
     let filterStr = filterValue.replaceAll("(", "").replaceAll(")", "");
     return options.filter(opt => RegExp(filterStr, 'i').test(opt))
   };

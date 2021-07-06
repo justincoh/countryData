@@ -28,7 +28,6 @@ const keyDisplayNames = {
 
 
 const Country = ({country}) => {
-  console.log(country);
   window.country = country;
   if (!country) return null;
 

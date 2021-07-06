@@ -1,16 +1,15 @@
 import { useState, createRef } from "react";
 import TypeaheadOptions from "./typeaheadOptions";
 
-const Typeahead = ({ options, selectedCountry, setSelectedCountry }) => {
-  const [inputVal, setInputVal] = useState(selectedCountry);
+const Typeahead = ({ options, selectedCountryName, setSelectedCountryName }) => {
+  const [inputVal, setInputVal] = useState(selectedCountryName);
   const [focused, setFocused] = useState(false);
-  const inputId = "typeahead-input";
 
   const inputRef = createRef();
 
   const onOptionSelection = (countryName) => {
     setInputVal(countryName);
-    setSelectedCountry(countryName);
+    setSelectedCountryName(countryName);
     setFocused(false);
   };
 
@@ -42,7 +41,7 @@ const Typeahead = ({ options, selectedCountry, setSelectedCountry }) => {
       <input
         tabIndex="1"
         type="text"
-        id={inputId}
+        id="typeahead-input"
         className="typeahead-input"
         placeholder="Choose a country"
         value={inputVal}

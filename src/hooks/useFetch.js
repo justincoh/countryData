@@ -15,7 +15,7 @@ function useFetch(baseUrl) {
     const finalUrl = baseUrl + url;
 
     try {
-      console.log("Fetching url: ", finalUrl);
+      // console.log("Fetching url: ", finalUrl);
       const response = await fetch(finalUrl, { method, headers, ...options });
 
       const data = await response.json();

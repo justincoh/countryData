@@ -1,20 +1,30 @@
 import "./App.css";
 import { useEffect, useState } from "react";
-import { API_BASE_URL } from "./constants";
+import { COUNTRY_API_BASE_URL } from "./constants";
+import { buildWeatherUrl } from "./util";
 import Country from "./country";
 import Typeahead from "./typeahead";
 import Loader from "./loader";
 import useFetch from "./hooks/useFetch";
 import Map from "./Map";
+import WeatherLine from "./weatherLine";
 
 function App() {
   const [countryMap, setCountryMap] = useState({});
-  const [selectedCountry, _setSelectedCountry] = useState(null);
+  const [selectedCountryName, _setSelectedCountryName] = useState(null);
   const [countryNameList, setNameList] = useState([]); // for display with proper case
-  const { isFetching, get } = useFetch(`${API_BASE_URL}`);
+  const [weather, setWeather] = useState(null);
+  const {
+    isFetching: isFetchingCountries,
+    get: getCountries,
+  } = useFetch(`${COUNTRY_API_BASE_URL}`);
+  const {
+    isFetching: isFetchingWeather,
+    get: getWeather,
+  } = useFetch("");
 
   // Simple wrapper so we don't have to care about string case
-  const setSelectedCountry = (countryName) => _setSelectedCountry(countryName.toLowerCase());
+  const setSelectedCountryName = (countryName) => _setSelectedCountryName(countryName.toLowerCase());
 
   useEffect(() => {
     fetchCountryList()
@@ -24,16 +34,25 @@ function App() {
       });
   }, []);
 
+  useEffect(() => {
+    if (!selectedCountryName) { return; }
+
+    const { latlng: [lat, lng] } = countryMap[selectedCountryName];
+    getWeather(buildWeatherUrl(lat, lng))
+      .then(setWeather)
+      .catch(console.error);
+  }, [selectedCountryName])
+
   const fetchCountryList = async () => {
-    const res = await get("/all")
+    const res = await getCountries("/all")
     return res;
-  }
+  };
 
   const chooseRandomCountry = (countryList) => {
     const len = countryList.length;
     const idx = Math.round(Math.random() * len);
     const selected = countryList[idx]
-    setSelectedCountry(selected.name);
+    setSelectedCountryName(selected.name);
   };
 
   const buildInitialState = (countryList) => {
@@ -50,7 +69,7 @@ function App() {
     chooseRandomCountry(countryList);
   };
 
-  const selectedCountryObj = countryMap[selectedCountry] || {};
+  const selectedCountryObj = countryMap[selectedCountryName] || {};
   let center = null;
   if (selectedCountryObj) {
     center = selectedCountryObj.latlng;
@@ -58,14 +77,15 @@ function App() {
 
   return (
     <div className="App">
-      { isFetching && <Loader />}
-      { !isFetching && (
+      { isFetchingCountries && <Loader />}
+      { !isFetchingCountries && (
         <>
           <div className="flex-container">
             <div className="column flag-display">
               <>
                 <img id="flag" width="250" src={selectedCountryObj?.flag} />
                 <Country country={selectedCountryObj} />
+                <WeatherLine weatherObj={weather} />
               </>
             </div>
             {center && <Map
@@ -76,8 +96,8 @@ function App() {
             <div className="column country-list">
               <Typeahead
                 options={countryNameList}
-                selectedCountry={selectedCountry}
-                setSelectedCountry={setSelectedCountry}
+                selectedCountryName={selectedCountryName}
+                setSelectedCountryName={setSelectedCountryName}
               />
             </div>
           </div>

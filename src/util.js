@@ -40,4 +40,15 @@ export const getLocalTime = (tzString) => {
 
   // return time as a string
   return dateWithOffset.toLocaleTimeString();
-}
+};
+
+export const throttle = (func, limit) => {
+  let blocked
+  return function() {
+    if (!blocked) {
+      func();
+      blocked = true
+      setTimeout(() => blocked = false, limit)
+    }
+  }
+};

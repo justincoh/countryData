@@ -5,6 +5,7 @@ import Country from "./country";
 import Typeahead from "./typeahead";
 import Loader from "./loader";
 import useFetch from "./hooks/useFetch";
+import useWindowSize from "./hooks/useWindowSize";
 import Map from "./Map";
 import Weather from "./weather";
 
@@ -13,6 +14,7 @@ function App() {
   const [selectedCountryName, _setSelectedCountryName] = useState(null);
   const [countryNameList, setNameList] = useState([]); // for display with proper case
   const {isFetching, get: getCountries} = useFetch(`${COUNTRY_API_BASE_URL}`);
+  const windowSize = useWindowSize();
 
   // Simple wrapper so we don't have to care about string case
   const setSelectedCountryName = (countryName) => _setSelectedCountryName(countryName.toLowerCase());

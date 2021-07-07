@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { throttle } from "../util";
+import { debounce } from "../util";
 
 const useWindowSize = () => {
   // Initialize state with undefined width/height so server and client renders match
@@ -11,15 +11,8 @@ const useWindowSize = () => {
 
   useEffect(() => {
     // Handler to call on window resize
-    function handleResize() {
-      // Set window width/height to state
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    }
     // Add event listener
-    window.addEventListener("resize", throttle(handleResize, 100));
+    window.addEventListener("resize", debounce(handleResize, 100));
 
     // Call handler right away so state gets updated with initial window size
     handleResize();
@@ -27,6 +20,14 @@ const useWindowSize = () => {
     // Remove event listener on cleanup
     return () => window.removeEventListener("resize", handleResize);
   }, []); // Empty array ensures that effect is only run on mount
+
+  const handleResize = () => {
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+  }
+
 
   return windowSize;
 };

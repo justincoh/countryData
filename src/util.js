@@ -28,7 +28,6 @@ export const getLocalTime = (tzString) => {
   // create Date object for current location
   const date = new Date();
 
-
   // convert to ms
   // subtract local time zone offset
   const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
@@ -52,3 +51,11 @@ export const throttle = (func, limit) => {
     }
   }
 };
+
+export const debounce = (func, wait) => {
+  let timeout
+  return function() {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(), wait)
+  }
+}

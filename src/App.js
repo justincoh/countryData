@@ -66,16 +66,16 @@ function App() {
         <>
           <div className="flex-container">
             <div className="column flag-display">
-              <>
-                <img id="flag" width="250" src={selectedCountryObj?.flag} />
+              {selectedCountryObj && (
+                <>
+                <img id="flag" width="250" src={selectedCountryObj.flag} />
                 <Country country={selectedCountryObj} />
-                {selectedCountryObj && (
-                  <Weather
-                    lat={selectedCountryObj.latlng[0]}
-                    lng={selectedCountryObj.latlng[1]}
-                  />
-                )}
-              </>
+                <Weather
+                  lat={selectedCountryObj.latlng[0]}
+                  lng={selectedCountryObj.latlng[1]}
+                />
+                </>
+              )}
             </div>
             {center && <Map
               country={selectedCountryObj}

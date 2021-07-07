@@ -1,3 +1,5 @@
+import { getLocalTime } from "./util";
+
 const yieldSelf = n => n;
 
 // only mapping things I care about displaying
@@ -13,6 +15,10 @@ const displayFuncs = {
   "nativeName": yieldSelf,
   "population": n => n ? n.toLocaleString() : "unknown",
   "subregion": yieldSelf,
+  "timezones": (zoneArray) => {
+    if (!zoneArray.length) return "Unknown";
+    return getLocalTime(zoneArray[0]);
+  },
 };
 
 const keyDisplayNames = {
@@ -24,6 +30,7 @@ const keyDisplayNames = {
   "nativeName": "Native Name",
   "population": "Population",
   "subregion": "Region",
+  "timezones": "Local Time"
 };
 
 

@@ -33,17 +33,27 @@ const keyDisplayNames = {
   "timezones": "Local Time"
 };
 
+const keyDisplayOrder = [
+  "name",
+  "nativeName",
+  "subregion",
+  "languages",
+  "population",
+  "capital",
+  "demonym",
+  "area",
+  "timezones",
+];
+
 
 const Country = ({country}) => {
   window.country = country;
   if (!country) return null;
 
   return (
-    Object.entries(country).map(([k, v]) => {
-      if (k in displayFuncs) {
-        return <p key={k}>{keyDisplayNames[k]}: {displayFuncs[k](v)}</p>
-      } else { return null; }
-    })
+    keyDisplayOrder.map((k) => (
+      <p key={k}>{keyDisplayNames[k]}: {displayFuncs[k](country[k])}</p>
+    ))
   );
 };
 

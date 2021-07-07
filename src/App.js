@@ -1,27 +1,18 @@
 import "./App.css";
 import { useEffect, useState } from "react";
 import { COUNTRY_API_BASE_URL } from "./constants";
-import { buildWeatherUrl } from "./util";
 import Country from "./country";
 import Typeahead from "./typeahead";
 import Loader from "./loader";
 import useFetch from "./hooks/useFetch";
 import Map from "./Map";
-import WeatherLine from "./weatherLine";
+import Weather from "./weather";
 
 function App() {
   const [countryMap, setCountryMap] = useState({});
   const [selectedCountryName, _setSelectedCountryName] = useState(null);
   const [countryNameList, setNameList] = useState([]); // for display with proper case
-  const [weather, setWeather] = useState(null);
-  const {
-    isFetching: isFetchingCountries,
-    get: getCountries,
-  } = useFetch(`${COUNTRY_API_BASE_URL}`);
-  const {
-    isFetching: isFetchingWeather,
-    get: getWeather,
-  } = useFetch("");
+  const {isFetching, get: getCountries} = useFetch(`${COUNTRY_API_BASE_URL}`);
 
   // Simple wrapper so we don't have to care about string case
   const setSelectedCountryName = (countryName) => _setSelectedCountryName(countryName.toLowerCase());
@@ -33,15 +24,6 @@ function App() {
         buildInitialState(countryList)
       });
   }, []);
-
-  useEffect(() => {
-    if (!selectedCountryName) { return; }
-
-    const { latlng: [lat, lng] } = countryMap[selectedCountryName];
-    getWeather(buildWeatherUrl(lat, lng))
-      .then(setWeather)
-      .catch(console.error);
-  }, [selectedCountryName])
 
   const fetchCountryList = async () => {
     const res = await getCountries("/all")
@@ -69,7 +51,7 @@ function App() {
     chooseRandomCountry(countryList);
   };
 
-  const selectedCountryObj = countryMap[selectedCountryName] || {};
+  const selectedCountryObj = countryMap[selectedCountryName] || null;
   let center = null;
   if (selectedCountryObj) {
     center = selectedCountryObj.latlng;
@@ -77,15 +59,20 @@ function App() {
 
   return (
     <div className="App">
-      { isFetchingCountries && <Loader />}
-      { !isFetchingCountries && (
+      { isFetching&& <Loader />}
+      { !isFetching&& (
         <>
           <div className="flex-container">
             <div className="column flag-display">
               <>
                 <img id="flag" width="250" src={selectedCountryObj?.flag} />
                 <Country country={selectedCountryObj} />
-                <WeatherLine weatherObj={weather} />
+                {selectedCountryObj && (
+                  <Weather
+                    lat={selectedCountryObj.latlng[0]}
+                    lng={selectedCountryObj.latlng[1]}
+                  />
+                )}
               </>
             </div>
             {center && <Map

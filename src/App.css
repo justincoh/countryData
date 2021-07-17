@@ -8,6 +8,8 @@
 .flex-container {
   display: flex;
   flex-flow: row wrap;
+  max-width: 1024px;
+  margin: auto;
 }
 
 .column {
@@ -15,8 +17,10 @@
 }
 
 .country-list {
+  margin-top: 15px;
   max-height: 100vh;
   overflow-y: scroll;
+  width: 100%;
 }
 
 #flag {
@@ -34,12 +38,15 @@
 }
 
 .typeahead-container {
+  background-color: white;
   border: 1px solid black;
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
   overflow-x: hidden;
   overflow-y: scroll;
+  width: 75%;
+  margin: auto;
 }
 
 .width-100 {
@@ -87,6 +94,10 @@
     width: 100%;
   }
 
+  .country-list {
+    margin-top: 0;
+  }
+
   #flag {
     width: 100%;
   }
@@ -105,7 +116,7 @@
   }
 
   .typeahead-container {
-    max-width: 100%;
     overflow: visible;
+    width: 100%;
   }
 }

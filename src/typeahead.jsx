@@ -39,7 +39,7 @@ const Typeahead = ({ options, selectedCountryName, setSelectedCountryName }) => 
   return (
     <div className="typeahead-container">
       <input
-        tabIndex="1"
+        tabIndex="0"
         type="text"
         id="typeahead-input"
         className="typeahead-input"

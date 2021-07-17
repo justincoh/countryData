@@ -7,13 +7,17 @@
 
 .flex-container {
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: row wrap-reverse; /* to get tabindexes ordered */
   max-width: 1024px;
   margin: auto;
 }
 
 .column {
   width: 49%;
+}
+
+.flag-display {
+  padding-left: 20px;
 }
 
 .country-list {
@@ -75,7 +79,7 @@
 
 .leaflet-container {
   border: 1px solid black;
-  height: 500px;
+  height: inherit;
   width: 50%;
 }
 
@@ -94,12 +98,12 @@
     width: 100%;
   }
 
-  .country-list {
-    margin-top: 0;
-  }
-
   #flag {
     width: 100%;
+  }
+
+  .flag-display {
+    padding-left: 0;
   }
 
   .flex-container {
@@ -107,7 +111,7 @@
   }
 
   .leaflet-container {
-    max-height: 33vh;
+    height: 33vh;
     width: 100%;
   }
 

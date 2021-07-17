@@ -65,6 +65,18 @@ function App() {
       { !isFetching&& (
         <>
           <div className="flex-container">
+            <div className="column country-list">
+              <Typeahead
+                options={countryNameList}
+                selectedCountryName={selectedCountryName}
+                setSelectedCountryName={setSelectedCountryName}
+              />
+            </div>
+            {center && <Map
+              country={selectedCountryObj}
+              latitude={center[0]}
+              longitude={center[1]}
+            /> }
             <div className="column flag-display">
               {selectedCountryObj && (
                 <>
@@ -76,18 +88,6 @@ function App() {
                 />
                 </>
               )}
-            </div>
-            {center && <Map
-              country={selectedCountryObj}
-              latitude={center[0]}
-              longitude={center[1]}
-            /> }
-            <div className="column country-list">
-              <Typeahead
-                options={countryNameList}
-                selectedCountryName={selectedCountryName}
-                setSelectedCountryName={setSelectedCountryName}
-              />
             </div>
           </div>
         </>

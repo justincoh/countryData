@@ -37,8 +37,8 @@ export const getLocalTime = (tzString) => {
   const offset = getOffsetFloat(tzString);
   const dateWithOffset = new Date(utc + (3600000 * offset));
 
-  // return time as a string
-  return dateWithOffset.toLocaleTimeString();
+  // return time as a string, "short" means "no seconds"
+  return dateWithOffset.toLocaleTimeString([], { timeStyle: "short" });
 };
 
 export const throttle = (func, limit) => {

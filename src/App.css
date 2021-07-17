@@ -93,6 +93,10 @@
 }
 
 @media screen and (max-width: 768px) {
+  .App {
+    padding: 5px 20px;
+  }
+
   .column {
     margin: 5px 0;
     width: 100%;
@@ -107,11 +111,12 @@
   }
 
   .flex-container {
-    flex-direction: column-reverse;
+    flex-direction: column;
   }
 
   .leaflet-container {
     height: 33vh;
+    margin-top: 30px;
     width: 100%;
   }
 
@@ -121,6 +126,8 @@
 
   .typeahead-container {
     overflow: visible;
-    width: 100%;
+    position: absolute;
+    z-index: 9999; /* this big because of leaflet's builtins */
+    width: 90%;
   }
 }

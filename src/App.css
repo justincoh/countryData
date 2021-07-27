@@ -97,6 +97,15 @@
     padding: 5px 20px;
   }
 
+  .country-list {
+    left: 0;
+    padding: 0 20px;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 9999; /* this big because of leaflet's builtins */
+  }
+
   .column {
     margin: 5px 0;
     width: 100%;
@@ -116,7 +125,7 @@
 
   .leaflet-container {
     height: 33vh;
-    margin-top: 30px;
+    margin-top: 35px;
     width: 100%;
   }
 
@@ -126,8 +135,6 @@
 
   .typeahead-container {
     overflow: visible;
-    position: absolute;
-    z-index: 9999; /* this big because of leaflet's builtins */
-    width: 90%;
+    width: 100%;
   }
 }

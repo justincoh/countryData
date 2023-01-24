@@ -28,14 +28,15 @@ function App() {
   }, []);
 
   const fetchCountryList = async () => {
-    const res = await getCountries("/all")
-    return res;
+    return await getCountries("/all")
   };
 
   const chooseRandomCountry = (countryList) => {
     const len = countryList.length;
     const idx = Math.round(Math.random() * len);
     const selected = countryList[idx]
+
+    // this doesn't handle bad entries
     setSelectedCountryName(selected.name);
   };
 
@@ -59,6 +60,8 @@ function App() {
     center = selectedCountryObj.latlng;
   }
 
+  console.log("Selected country: ", selectedCountryObj);
+
   return (
     <div className="App">
       { isFetching&& <Loader />}
@@ -80,7 +83,7 @@ function App() {
             <div className="column flag-display">
               {selectedCountryObj && (
                 <>
-                <img id="flag" width="250" src={selectedCountryObj.flag} />
+                <img alt={`flag of ${selectedCountryObj.name}`} id="flag" width="250" src={selectedCountryObj.flag} />
                 <Country country={selectedCountryObj} />
                 <Weather
                   lat={selectedCountryObj.latlng[0]}

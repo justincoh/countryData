@@ -42,7 +42,7 @@ export const getLocalTime = (tzString) => {
 };
 
 export const throttle = (func, limit) => {
-  let blocked
+  let blocked;
   return function() {
     if (!blocked) {
       func();

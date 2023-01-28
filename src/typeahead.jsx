@@ -28,7 +28,11 @@ const Typeahead = ({ options, selectedCountryName, setSelectedCountryName }) => 
 
   const onKeyPress = (e) => {
     if (e.key !== "Enter") return;
-    onOptionSelection(inputVal);
+
+    // don't select it unless it's valid
+    if (options.includes(inputVal)) {
+      onOptionSelection(inputVal);
+    }
   }
 
   const clearInput = () => {

@@ -28,7 +28,7 @@ function App() {
   }, []);
 
   const fetchCountryList = async () => {
-    const res = await getCountries("/all")
+    const res = await getCountries("/all?fields=name,latlng,languages,timezones,nativeName,population,demonym,area,capital,flag")
     return res;
   };
 

@@ -29,14 +29,14 @@ const keyDisplayNames = {
   "name": "Name",
   "nativeName": "Native Name",
   "population": "Population",
-  "subregion": "Region",
+  // "subregion": "Region",
   "timezones": "Local Time"
 };
 
 const keyDisplayOrder = [
   "name",
   "nativeName",
-  "subregion",
+  // "subregion",
   "languages",
   "population",
   "capital",

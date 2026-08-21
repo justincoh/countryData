@@ -119,6 +119,10 @@ function ensureContrast(rgb: RGB, bg: RGB, target: number): RGB {
 export type Palette = {
 	/** Dominant flag colours, most-used first, unmodified. */
 	colors: string[];
+	/** The country's signature colour: the most chromatic one in the flag.
+	    Used for the hero field, where the most *common* colour would give a
+	    white wash for Japan and every other white-ground flag. */
+	field: string;
 	/** Accent adjusted to clear 4.5:1 on a light surface. */
 	onLight: string;
 	/** Accent adjusted to clear 4.5:1 on a dark surface. */
@@ -131,6 +135,7 @@ const NEAR_BLACK: RGB = [18, 18, 20];
 export async function extractPalette(svg: Buffer): Promise<Palette> {
 	const { data, info } = await sharp(svg, { density: 150 })
 		.resize({ width: 64, height: 40, fit: 'fill' })
+		.ensureAlpha()
 		.raw()
 		.toBuffer({ resolveWithObject: true });
 
@@ -138,6 +143,9 @@ export async function extractPalette(svg: Buffer): Promise<Palette> {
 	// which are flat fills rather than photographic gradients.
 	const buckets = new Map<number, { sum: RGB; n: number }>();
 	for (let i = 0; i < data.length; i += info.channels) {
+		// Nepal is the only non-rectangular national flag; without this its
+		// transparent corners sample as black and take over the palette.
+		if (data[i + 3] < 128) continue;
 		const rgb: RGB = [data[i], data[i + 1], data[i + 2]];
 		const key =
 			((rgb[0] >> 3) << 10) | ((rgb[1] >> 3) << 5) | (rgb[2] >> 3);
@@ -160,17 +168,17 @@ export async function extractPalette(svg: Buffer): Promise<Palette> {
 		if (distinct.length === 4) break;
 	}
 
-	// The accent should be the most chromatic colour available; falling back to
-	// the most common one keeps monochrome flags working.
-	const accent =
-		[...distinct].sort((a, b) => {
-			const sa = rgbToHsl(a)[1] * (1 - Math.abs(rgbToHsl(a)[2] - 0.5) * 1.2);
-			const sb = rgbToHsl(b)[1] * (1 - Math.abs(rgbToHsl(b)[2] - 0.5) * 1.2);
-			return sb - sa;
-		})[0] ?? distinct[0];
+	// Rank by chroma, discounting colours pushed toward black or white, so the
+	// accent is a colour someone would actually name when describing the flag.
+	const chroma = (c: RGB) => {
+		const [, s, l] = rgbToHsl(c);
+		return s * (1 - Math.abs(l - 0.5) * 1.2);
+	};
+	const accent = [...distinct].sort((a, b) => chroma(b) - chroma(a))[0] ?? distinct[0];
 
 	return {
 		colors: distinct.map(toHex),
+		field: toHex(accent),
 		onLight: toHex(ensureContrast(accent, WHITE, 4.5)),
 		onDark: toHex(ensureContrast(accent, NEAR_BLACK, 4.5))
 	};

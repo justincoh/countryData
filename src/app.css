@@ -1,0 +1,150 @@
+/*
+ * Countries — design tokens.
+ *
+ * The neutral system is deliberately cool and quiet: 250 different flag
+ * palettes have to sit on top of it without clashing, so the only saturated
+ * colour on any page comes from the country itself. --accent and --field are
+ * injected per country at render time.
+ */
+
+:root {
+	/* Map-sheet neutrals rather than warm paper — flag colours read truer
+	   against a cool ground, and warm cream fights every red flag on earth. */
+	--paper: #f4f5f7;
+	--paper-2: #eceef1;
+	--ink: #14161a;
+	--ink-2: #4a5058;
+	--muted: #767d87;
+	--rule: #d7dae0;
+	--field-ink: #ffffff;
+
+	--accent: #14161a;
+	--field: #d7dae0;
+
+	--sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	--cond: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	--mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+	--gutter: 1.25rem;
+	--measure: 34rem;
+	--radius: 0.5rem;
+
+	--ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+	/* light-dark() resolves against this, and every per-country accent goes
+	   through light-dark(), so it must be correct in all three theme states. */
+	color-scheme: light;
+}
+
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--paper: #101216;
+		--paper-2: #191c22;
+		--ink: #e9ebef;
+		--ink-2: #a7aeb9;
+		--muted: #7e8794;
+		--rule: #272b33;
+		color-scheme: dark;
+	}
+}
+
+:root[data-theme='dark'] {
+	--paper: #101216;
+	--paper-2: #191c22;
+	--ink: #e9ebef;
+	--ink-2: #a7aeb9;
+	--muted: #7e8794;
+	--rule: #272b33;
+	color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: var(--paper);
+	color: var(--ink);
+	font-family: var(--sans);
+	font-size: 1rem;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+	overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+p {
+	margin: 0;
+}
+
+a {
+	color: inherit;
+}
+
+button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+}
+
+/* A single visible focus treatment everywhere, since the app is heavily
+   keyboard-navigable through the search combobox. */
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+/* Field labels in the fact block: the gazetteer register. */
+.label {
+	font-family: var(--mono);
+	font-size: 0.6875rem;
+	font-weight: 500;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+/* Figures align in a column, so they are always tabular. */
+.figure {
+	font-family: var(--mono);
+	font-variant-numeric: tabular-nums;
+	font-feature-settings: 'zero' 1;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

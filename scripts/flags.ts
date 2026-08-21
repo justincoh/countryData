@@ -1,0 +1,177 @@
+/**
+ * Flag assets + the palette the UI is themed from.
+ *
+ * Two formats by necessity. Most flags are geometry (stripes, crosses) and are
+ * a few hundred bytes as SVG, where a raster would be ~13kb. A minority carry
+ * detailed coats of arms and run to hundreds of kilobytes as SVG — Mexico is
+ * 337kb — where a WebP at display resolution is 14kb. Each flag gets whichever
+ * format is smaller for it.
+ */
+import { gzipSync } from 'node:zlib';
+import sharp from 'sharp';
+import { optimize } from 'svgo';
+
+/** Above this gzipped SVG size, a raster is smaller than the vector. */
+const RASTER_THRESHOLD = 12 * 1024;
+const RASTER_WIDTH = 900;
+
+export type FlagAsset = {
+	ext: 'svg' | 'webp';
+	body: Buffer;
+	/** Intrinsic aspect ratio, so the layout reserves space and never shifts. */
+	ratio: number;
+};
+
+export async function buildFlag(svg: Buffer): Promise<FlagAsset> {
+	const optimized = optimize(svg.toString('utf8'), {
+		multipass: true,
+		floatPrecision: 2,
+		plugins: ['preset-default']
+	}).data;
+
+	const meta = await sharp(svg, { density: 300 }).metadata();
+	const ratio = (meta.width ?? 3) / (meta.height ?? 2);
+
+	if (gzipSync(Buffer.from(optimized)).length <= RASTER_THRESHOLD) {
+		return { ext: 'svg', body: Buffer.from(optimized), ratio };
+	}
+
+	const webp = await sharp(svg, { density: 300 })
+		.resize({ width: RASTER_WIDTH })
+		.webp({ quality: 82, effort: 6 })
+		.toBuffer();
+	return { ext: 'webp', body: webp, ratio };
+}
+
+/* ---------------------------------------------------------------- palette */
+
+type RGB = [number, number, number];
+
+const srgbToLinear = (c: number) => {
+	const s = c / 255;
+	return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+};
+
+/** WCAG relative luminance. */
+const luminance = ([r, g, b]: RGB) =>
+	0.2126 * srgbToLinear(r) + 0.7152 * srgbToLinear(g) + 0.0722 * srgbToLinear(b);
+
+/** WCAG contrast ratio between two colours. */
+export const contrast = (a: RGB, b: RGB) => {
+	const la = luminance(a);
+	const lb = luminance(b);
+	return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+};
+
+const toHex = ([r, g, b]: RGB) =>
+	'#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+
+function rgbToHsl([r, g, b]: RGB): [number, number, number] {
+	const R = r / 255, G = g / 255, B = b / 255;
+	const max = Math.max(R, G, B), min = Math.min(R, G, B);
+	const l = (max + min) / 2;
+	if (max === min) return [0, 0, l];
+	const d = max - min;
+	const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+	let h: number;
+	if (max === R) h = ((G - B) / d + (G < B ? 6 : 0)) / 6;
+	else if (max === G) h = ((B - R) / d + 2) / 6;
+	else h = ((R - G) / d + 4) / 6;
+	return [h, s, l];
+}
+
+function hslToRgb([h, s, l]: [number, number, number]): RGB {
+	if (s === 0) return [l * 255, l * 255, l * 255];
+	const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+	const p = 2 * l - q;
+	const f = (t: number) => {
+		if (t < 0) t += 1;
+		if (t > 1) t -= 1;
+		if (t < 1 / 6) return p + (q - p) * 6 * t;
+		if (t < 1 / 2) return q;
+		if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+		return p;
+	};
+	return [f(h + 1 / 3) * 255, f(h) * 255, f(h - 1 / 3) * 255];
+}
+
+/**
+ * Nudge lightness until the colour clears a contrast ratio against `bg`,
+ * preserving hue. Flag colours are chosen for symbolism, not legibility —
+ * Ukraine's yellow is 1.6:1 on white — so an unadjusted flag colour cannot be
+ * used for text or small UI marks.
+ */
+function ensureContrast(rgb: RGB, bg: RGB, target: number): RGB {
+	if (contrast(rgb, bg) >= target) return rgb;
+	const [h, s] = rgbToHsl(rgb);
+	const darken = luminance(bg) > 0.5;
+
+	let best = rgb;
+	for (let i = 1; i <= 100; i++) {
+		const l = darken ? 0.5 - (i / 100) * 0.5 : 0.5 + (i / 100) * 0.5;
+		const candidate = hslToRgb([h, s, l]);
+		best = candidate;
+		if (contrast(candidate, bg) >= target) break;
+	}
+	return best;
+}
+
+export type Palette = {
+	/** Dominant flag colours, most-used first, unmodified. */
+	colors: string[];
+	/** Accent adjusted to clear 4.5:1 on a light surface. */
+	onLight: string;
+	/** Accent adjusted to clear 4.5:1 on a dark surface. */
+	onDark: string;
+};
+
+const WHITE: RGB = [255, 255, 255];
+const NEAR_BLACK: RGB = [18, 18, 20];
+
+export async function extractPalette(svg: Buffer): Promise<Palette> {
+	const { data, info } = await sharp(svg, { density: 150 })
+		.resize({ width: 64, height: 40, fit: 'fill' })
+		.raw()
+		.toBuffer({ resolveWithObject: true });
+
+	// Coarse histogram: 5 bits per channel is enough to group flag colours,
+	// which are flat fills rather than photographic gradients.
+	const buckets = new Map<number, { sum: RGB; n: number }>();
+	for (let i = 0; i < data.length; i += info.channels) {
+		const rgb: RGB = [data[i], data[i + 1], data[i + 2]];
+		const key =
+			((rgb[0] >> 3) << 10) | ((rgb[1] >> 3) << 5) | (rgb[2] >> 3);
+		const e = buckets.get(key) ?? { sum: [0, 0, 0] as RGB, n: 0 };
+		e.sum[0] += rgb[0]; e.sum[1] += rgb[1]; e.sum[2] += rgb[2];
+		e.n++;
+		buckets.set(key, e);
+	}
+
+	const ranked = [...buckets.values()]
+		.sort((a, b) => b.n - a.n)
+		.map((e) => [e.sum[0] / e.n, e.sum[1] / e.n, e.sum[2] / e.n] as RGB);
+
+	// Keep visually distinct entries so a flag's shading doesn't fill the palette.
+	const distinct: RGB[] = [];
+	for (const c of ranked) {
+		if (distinct.every((d) => Math.hypot(d[0] - c[0], d[1] - c[1], d[2] - c[2]) > 60)) {
+			distinct.push(c);
+		}
+		if (distinct.length === 4) break;
+	}
+
+	// The accent should be the most chromatic colour available; falling back to
+	// the most common one keeps monochrome flags working.
+	const accent =
+		[...distinct].sort((a, b) => {
+			const sa = rgbToHsl(a)[1] * (1 - Math.abs(rgbToHsl(a)[2] - 0.5) * 1.2);
+			const sb = rgbToHsl(b)[1] * (1 - Math.abs(rgbToHsl(b)[2] - 0.5) * 1.2);
+			return sb - sa;
+		})[0] ?? distinct[0];
+
+	return {
+		colors: distinct.map(toHex),
+		onLight: toHex(ensureContrast(accent, WHITE, 4.5)),
+		onDark: toHex(ensureContrast(accent, NEAR_BLACK, 4.5))
+	};
+}

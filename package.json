@@ -3,14 +3,19 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "refresh-data": "node --experimental-strip-types scripts/build-data.ts"
+    "refresh-data": "node --experimental-strip-types scripts/build-data.ts",
+    "prepare-deploy": "node --experimental-strip-types scripts/prepare-deploy.ts",
+    "predeploy": "yarn build && yarn prepare-deploy",
+    "deploy": "gh-pages -d build -t"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",
@@ -26,6 +31,7 @@
     "topojson-client": "^3.1.0",
     "tz-lookup": "^6.1.25",
     "typescript": "^6.0.3",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "gh-pages": "^6.3.0"
   }
 }

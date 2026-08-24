@@ -48,7 +48,7 @@ export type Country = {
 	demonym: string | null;
 	landlocked: boolean;
 	borders: string[];     // cca2 codes, lowercased
-	flag: { src: string; ratio: number; emoji: string };
+	flag: { src: string; ratio: number; emoji: string; rectangular: boolean };
 	palette: Palette;
 };
 
@@ -142,7 +142,12 @@ async function main() {
 			borders: (c.borders ?? [])
 				.map((b: string) => byA3.get(b)?.cca2?.toLowerCase())
 				.filter(Boolean),
-			flag: { src: `/flags/${code}.${asset.ext}`, ratio: asset.ratio, emoji: c.flag },
+			flag: {
+				src: `/flags/${code}.${asset.ext}`,
+				ratio: asset.ratio,
+				emoji: c.flag,
+				rectangular: asset.rectangular
+			},
 			palette
 		});
 	}

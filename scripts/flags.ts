@@ -20,7 +20,32 @@ export type FlagAsset = {
 	body: Buffer;
 	/** Intrinsic aspect ratio, so the layout reserves space and never shifts. */
 	ratio: number;
+	/**
+	 * Whether the flag fills its own bounding box. Nepal is the only national
+	 * flag that does not, and an edge treatment drawn on the box would trace a
+	 * rectangle that isn't there. Detected rather than hardcoded so it stays
+	 * correct if upstream ever adds another.
+	 */
+	rectangular: boolean;
 };
+
+/** True when a meaningful share of the bounding box is transparent. */
+async function isRectangular(svg: Buffer): Promise<boolean> {
+	const { data, info } = await sharp(svg, { density: 72 })
+		.resize({ width: 48, height: 32, fit: 'fill' })
+		.ensureAlpha()
+		.raw()
+		.toBuffer({ resolveWithObject: true });
+
+	let clear = 0;
+	const pixels = info.width * info.height;
+	for (let i = 0; i < data.length; i += info.channels) {
+		if (data[i + 3] < 128) clear++;
+	}
+	// Antialiased edges leave a sliver transparent on any flag; 2% separates
+	// that from a genuinely non-rectangular shape.
+	return clear / pixels <= 0.02;
+}
 
 export async function buildFlag(svg: Buffer): Promise<FlagAsset> {
 	const optimized = optimize(svg.toString('utf8'), {
@@ -31,16 +56,19 @@ export async function buildFlag(svg: Buffer): Promise<FlagAsset> {
 
 	const meta = await sharp(svg, { density: 300 }).metadata();
 	const ratio = (meta.width ?? 3) / (meta.height ?? 2);
+	const rectangular = await isRectangular(svg);
 
 	if (gzipSync(Buffer.from(optimized)).length <= RASTER_THRESHOLD) {
-		return { ext: 'svg', body: Buffer.from(optimized), ratio };
+		return { ext: 'svg', body: Buffer.from(optimized), ratio, rectangular };
 	}
 
 	const webp = await sharp(svg, { density: 300 })
 		.resize({ width: RASTER_WIDTH })
-		.webp({ quality: 82, effort: 6 })
+		// alpha:true so a non-rectangular flag heavy enough to rasterise keeps
+		// its shape instead of gaining a black box.
+		.webp({ quality: 82, effort: 6, alphaQuality: 100 })
 		.toBuffer();
-	return { ext: 'webp', body: webp, ratio };
+	return { ext: 'webp', body: webp, ratio, rectangular };
 }
 
 /* ---------------------------------------------------------------- palette */

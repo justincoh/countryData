@@ -16,6 +16,7 @@
 	<div class="wash" aria-hidden="true"></div>
 	<img
 		class="flag"
+		class:framed={country.flag.rectangular}
 		src={country.flag.src}
 		alt="Flag of {country.name}"
 		style="aspect-ratio: {country.flag.ratio}"
@@ -52,8 +53,18 @@
 		display: block;
 		width: min(100%, 22rem);
 		height: auto;
+	}
+
+	/*
+	 * Only flags that fill their bounding box get an edge. Nepal is the one
+	 * national flag that does not, and a ring drawn on the box would outline a
+	 * rectangle the flag never occupies.
+	 *
+	 * Rectangular flags still need this: a white field would otherwise dissolve
+	 * into a light hero wash with no boundary at all.
+	 */
+	.framed {
 		border-radius: 3px;
-		/* Flags with white fields need an edge or they dissolve into the wash. */
 		box-shadow:
 			0 0 0 1px rgb(0 0 0 / 0.16),
 			0 12px 28px -12px rgb(0 0 0 / 0.45);

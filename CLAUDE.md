@@ -71,6 +71,14 @@ There is no browser tooling configured here. Changes to layout, colour or
 animation cannot be self-verified — build, serve with `yarn preview --host`,
 and ask rather than claiming a visual change works.
 
+*Geometry* is a different matter, and worth the trouble: `sharp` is already a
+dependency, so a throwaway script can rasterise a path into a PNG and read it
+back. Better still, measure rather than look — rendering each page's context in
+flat black and white and counting land pixels is what found a bug that had put
+a fake continent over the whole map on 82 of 221 pages. It had survived
+eyeballing precisely because it looked like a plausible landmass. Anything that
+can be reduced to a number about the geometry should be.
+
 ## Unfinished business on `main`
 
 `src/constants.js` on `main` contains a live OpenWeatherMap API key. This

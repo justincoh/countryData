@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { allCountries, getCountry, getDetail, getNeighbor } from '$lib/server/data';
+import { allCountries, getContext, getCountry, getDetail, getNeighbor } from '$lib/server/data';
 import type { EntryGenerator, PageServerLoad } from './$types';
 
 export const prerender = true;
@@ -15,6 +15,7 @@ export const load: PageServerLoad = ({ params }) => {
 	return {
 		country,
 		outline: getDetail(country.code),
+		context: getContext(country.code),
 		neighbors: country.borders.map(getNeighbor).filter((n) => n !== null)
 	};
 };

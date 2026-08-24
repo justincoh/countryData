@@ -50,6 +50,7 @@
 			<WorldMap
 				code={country.code}
 				outline={data.outline}
+				context={data.context}
 				neighbors={data.neighbors}
 				onselect={(code) => goto(`/${code}`)}
 			/>

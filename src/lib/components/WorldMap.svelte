@@ -6,55 +6,42 @@
 	 * static `d` string in one shared coordinate space, so there is no
 	 * projection maths here and nothing is recomputed per frame. Flying to a
 	 * country is a single animated `viewBox` — four numbers interpolating.
+	 *
+	 * Surrounding land comes from two places. `context` is baked for this page
+	 * specifically — simplified for this zoom, clipped to this frame — and is
+	 * what you see once the camera has settled. `world.json` is one coarse copy
+	 * of the planet, shared by every page and fetched once; it covers the wide
+	 * shots the camera passes through on the way in, where its half-pixel-at-
+	 * globe-scale accuracy is plenty.
 	 */
 	import { onMount } from 'svelte';
 	import { reducedMotion } from '$lib/motion.svelte';
+	import { RENDER_PAD, frameOf, inFrame, type Box } from '$lib/frame';
 
-	type Shape = { d: string; bbox: [number, number, number, number] };
+	type Shape = { d: string; bbox: Box };
 
 	let {
 		code,
 		outline,
+		context = null,
 		neighbors = [],
 		onselect
 	}: {
 		code: string;
 		outline: Shape | null;
+		context?: { clip: Box; shapes: { code: string; d: string }[] } | null;
 		neighbors?: { code: string; name: string }[];
 		onselect?: (code: string) => void;
 	} = $props();
 
-	const VIEW_W = 640;
-	const VIEW_H = 460;
-	/** Fraction of the frame the country is allowed to fill. */
-	const FILL = 0.62;
-	/** Nothing zooms closer than this, or a city-state fills the screen with
-	    a shape simplified for continental scale. */
-	const MIN_SPAN = 7;
-
 	let world = $state<Record<string, Shape> | null>(null);
-	let box = $state<[number, number, number, number]>([0, 0, 1000, 485]);
+	let box = $state<Box>([0, 0, 1000, 485]);
 	let drawn = $state(false);
 	let frame: number | null = null;
 
-	/** Frame a bbox into the viewport aspect, padded and floored to MIN_SPAN. */
-	function frameOf(bbox: [number, number, number, number]) {
-		const [x0, y0, x1, y1] = bbox;
-		const cx = (x0 + x1) / 2;
-		const cy = (y0 + y1) / 2;
-		const aspect = VIEW_W / VIEW_H;
-
-		let w = Math.max((x1 - x0) / FILL, MIN_SPAN);
-		let h = Math.max((y1 - y0) / FILL, MIN_SPAN / aspect);
-		if (w / h < aspect) w = h * aspect;
-		else h = w / aspect;
-
-		return [cx - w / 2, cy - h / 2, w, h] as [number, number, number, number];
-	}
-
 	const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
-	function flyTo(target: [number, number, number, number], instant = false) {
+	function flyTo(target: Box, instant = false) {
 		if (frame) cancelAnimationFrame(frame);
 		if (instant || reducedMotion.current) {
 			box = target;
@@ -98,17 +85,33 @@
 		drawn = true;
 	});
 
+	/**
+	 * The baked context stops at its clip rectangle. Draw it only while the
+	 * camera is inside that rectangle; step outside and a coastline would
+	 * simply end in a straight line where the clip cut it.
+	 *
+	 * At rest the camera is always well inside, so this is what a visitor sees.
+	 * It gives way to world.json partway through a fly between countries, while
+	 * the camera is still moving.
+	 */
+	const inClip = $derived.by(() => {
+		if (!context) return false;
+		const [x, y, w, h] = box;
+		const [cx, cy, cw, ch] = context.clip;
+		return x >= cx && y >= cy && x + w <= cx + cw && y + h <= cy + ch;
+	});
+
 	/** Only draw what is actually inside the frame — keeps the DOM at a few
 	    dozen nodes instead of 250 paths. */
-	const visible = $derived.by(() => {
+	const visible = $derived.by((): [string, { d: string }][] => {
+		if (inClip && context) {
+			// Already exactly this frame's countries; no filtering needed.
+			return context.shapes.map((s) => [s.code, s]);
+		}
 		if (!world) return [];
-		const [x, y, w, h] = box;
-		const pad = Math.max(w, h) * 0.35;
-		return Object.entries(world).filter(([cc, s]) => {
-			if (cc === code) return false;
-			const [a, b, c, d] = s.bbox;
-			return a < x + w + pad && c > x - pad && b < y + h + pad && d > y - pad;
-		});
+		return Object.entries(world).filter(
+			([cc, s]) => cc !== code && inFrame(s.bbox, box, RENDER_PAD)
+		);
 	});
 
 	const neighborCodes = $derived(new Set(neighbors.map((n) => n.code)));
@@ -147,9 +150,7 @@
 		</g>
 
 		{#if selfShape}
-			<!-- pathLength normalises the dash animation, so a 4,000-point
-			     coastline and a single island draw in the same time. -->
-			<path class="self" d={selfShape.d} pathLength="1" />
+			<path class="self" d={selfShape.d} />
 		{/if}
 	</svg>
 </div>
@@ -192,25 +193,30 @@
 		fill: color-mix(in oklab, var(--accent) 38%, var(--rule));
 	}
 
+	/*
+	 * Solid accent, no outline.
+	 *
+	 * This was a translucent fill under a 1.6px accent stroke, which put a
+	 * bright line exactly where the geometry is least trustworthy. Adjacent
+	 * countries come from the source with no shared border vertices — not one,
+	 * between any pair — so a boundary is two independently simplified lines
+	 * that disagree by a couple of pixels. Stroked, that read as a bright edge
+	 * floating in a gap. Filled, the subject simply covers the disagreement:
+	 * it is drawn last and opaque, so a neighbour that overlaps goes under it
+	 * and one that falls short leaves the same hairline every other border has.
+	 */
 	.self {
-		fill: color-mix(in oklab, var(--accent) 26%, transparent);
-		stroke: var(--accent);
-		stroke-width: 1.6;
-		stroke-linejoin: round;
-		vector-effect: non-scaling-stroke;
-		animation: trace 1s var(--ease) both;
+		fill: var(--accent);
+		animation: land 0.55s var(--ease) both;
 	}
 
-	/* The boundary inks itself in — the gesture the app is actually about. */
-	@keyframes trace {
+	/* The country arrives rather than drawing itself. The outline used to ink
+	   itself in along the stroke; there is no stroke left to ink. */
+	@keyframes land {
 		from {
-			stroke-dasharray: 1;
-			stroke-dashoffset: 1;
 			fill-opacity: 0;
 		}
 		to {
-			stroke-dasharray: 1;
-			stroke-dashoffset: 0;
 			fill-opacity: 1;
 		}
 	}

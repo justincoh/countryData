@@ -112,12 +112,14 @@ function simplifyGeometry(geom: any, tolerance: number, minArea: number): any {
 			.filter((p: number[][][]) => ringArea(p[0]) >= minArea)
 			.map((p: number[][][]) => doPolygon(p))
 			.filter(Boolean);
-		// Never let a country vanish entirely: keep its largest part.
+		// Never let a country vanish entirely: keep its largest part, and if
+		// even that is too thin to survive the area filter, keep it unsimplified
+		// rather than returning nothing.
 		if (!polys.length) {
 			const biggest = [...geom.coordinates].sort(
 				(a: number[][][], b: number[][][]) => ringArea(b[0]) - ringArea(a[0])
 			)[0];
-			return { type: 'Polygon', coordinates: doPolygon(biggest)! };
+			return { type: 'Polygon', coordinates: doPolygon(biggest) ?? biggest };
 		}
 		return { type: 'MultiPolygon', coordinates: polys };
 	}
@@ -151,18 +153,41 @@ function lonLatExtent(geom: any): number {
 const adaptiveTolerance = (extentDeg: number, targetPx: number, errPx: number) =>
 	Math.max(0.004, (extentDeg / targetPx) * errPx);
 
-export async function loadGeometry(
+/** Degrees of longitude per unit of the shared world space. */
+export const DEG_PER_UNIT = 360 / WORLD_W;
+
+/**
+ * Simplification tolerance, in degrees, for geometry that will be drawn in a
+ * frame `spanUnits` wide. Unlike `adaptiveTolerance` this does not care how
+ * big the country is — a neighbour sharing the frame is drawn at the same
+ * scale as the subject and needs the same accuracy.
+ */
+export const frameTolerance = (spanUnits: number, errPx: number, viewPx: number) =>
+	Math.max(0.004, (spanUnits / viewPx) * errPx * DEG_PER_UNIT);
+
+/**
+ * Drop polygons whose bounding box is smaller than `minPx` on screen. Replaces
+ * a fixed degree threshold, which erased island chains — the Aegean, the
+ * Lesser Antilles — at every zoom level regardless of how large they rendered.
+ */
+export const frameMinArea = (spanUnits: number, minPx: number, viewPx: number) =>
+	Math.pow((spanUnits / viewPx) * minPx * DEG_PER_UNIT, 2);
+
+type Raw = { geometries: any[]; extent: number };
+
+/** Parsed source geometry, keyed by cca3. One page's context needs the same
+    country at several tiers; re-reading and re-parsing each time dominated
+    the build. */
+const rawCache = new Map<string, Raw | null>();
+
+export async function loadRaw(
 	dataDir: string,
 	cca3: string,
-	opts: {
-		tolerance?: number;
-		minArea?: number;
-		digits: number;
-		targetPx?: number;
-		errPx?: number;
-		supplemental?: Record<string, any>;
-	}
-): Promise<Geom | null> {
+	supplemental?: Record<string, any>
+): Promise<Raw | null> {
+	const hit = rawCache.get(cca3);
+	if (hit !== undefined) return hit;
+
 	let raw: any[] = [];
 	try {
 		const topo = JSON.parse(
@@ -177,27 +202,84 @@ export async function loadGeometry(
 
 	// mledoze ships an empty stub for Kosovo (`"type": null`), which would
 	// otherwise leave a country with a flag and full facts but no shape.
-	if (!raw.length && opts.supplemental?.[cca3]) raw = [opts.supplemental[cca3]];
-	if (!raw.length) return null;
+	if (!raw.length && supplemental?.[cca3]) raw = [supplemental[cca3]];
+
+	const value = raw.length
+		? { geometries: raw, extent: Math.max(...raw.map(lonLatExtent), 0.001) }
+		: null;
+	rawCache.set(cca3, value);
+	return value;
+}
+
+/** Simplify in lon/lat. Separated from rendering because one simplified copy
+    serves every page framed at the same zoom, while the clip differs per page
+    and this is the expensive half. */
+export function simplifyFor(raw: Raw, tolerance: number, minArea: number): any | null {
+	const geometries = raw.geometries
+		.map((g: any) => simplifyGeometry(g, tolerance, minArea))
+		.filter(Boolean);
+	return geometries.length ? { type: 'GeometryCollection', geometries } : null;
+}
+
+/**
+ * Project simplified geometry to a path string.
+ *
+ * `clip` is a rectangle in world space. Without it a country that merely
+ * clips the corner of the frame still ships its whole coastline: Venezuela
+ * drawn at Aruba's zoom cost 14kb to render a sliver. d3 post-clips in
+ * projected space, so only what is on screen reaches the path.
+ */
+export function renderShape(
+	merged: any,
+	opts: { digits: number; clip?: [number, number, number, number] }
+): Geom | null {
+	if (opts.clip) {
+		const [x, y, w, h] = opts.clip;
+		projection.clipExtent([[x, y], [x + w, y + h]]);
+	} else {
+		projection.clipExtent(null);
+	}
+	try {
+		const pathGen = geoPath(projection).digits(opts.digits);
+		const d = pathGen(merged);
+		if (!d) return null;
+
+		const [[x0, y0], [x1, y1]] = pathGen.bounds(merged);
+		if (!Number.isFinite(x0)) return null;
+		return { d, bbox: [x0, y0, x1, y1] };
+	} finally {
+		projection.clipExtent(null);
+	}
+}
+
+/** Simplify, project and serialise one country at a given accuracy. */
+export function buildShape(
+	raw: Raw,
+	opts: { tolerance: number; minArea: number; digits: number }
+): Geom | null {
+	const merged = simplifyFor(raw, opts.tolerance, opts.minArea);
+	return merged ? renderShape(merged, { digits: opts.digits }) : null;
+}
+
+export async function loadGeometry(
+	dataDir: string,
+	cca3: string,
+	opts: {
+		tolerance?: number;
+		minArea?: number;
+		digits: number;
+		targetPx?: number;
+		errPx?: number;
+		supplemental?: Record<string, any>;
+	}
+): Promise<Geom | null> {
+	const raw = await loadRaw(dataDir, cca3, opts.supplemental);
+	if (!raw) return null;
 
 	// Scale simplification to how large the country renders, not how large it is.
-	const extent = Math.max(...raw.map(lonLatExtent), 0.001);
-	const tolerance = opts.tolerance ?? adaptiveTolerance(extent, opts.targetPx ?? 640, opts.errPx ?? 0.9);
-	const minArea = opts.minArea ?? Math.pow(extent / 260, 2);
+	const tolerance =
+		opts.tolerance ?? adaptiveTolerance(raw.extent, opts.targetPx ?? 640, opts.errPx ?? 0.9);
+	const minArea = opts.minArea ?? Math.pow(raw.extent / 260, 2);
 
-	const merged = {
-		type: 'GeometryCollection',
-		geometries: raw
-			.map((g: any) => simplifyGeometry(g, tolerance, minArea))
-			.filter(Boolean)
-	};
-
-	if (!merged.geometries.length) return null;
-
-	const pathGen = geoPath(projection).digits(opts.digits);
-	const d = pathGen(merged as any);
-	if (!d) return null;
-
-	const [[x0, y0], [x1, y1]] = pathGen.bounds(merged as any);
-	return { d, bbox: [x0, y0, x1, y1] };
+	return buildShape(raw, { tolerance, minArea, digits: opts.digits });
 }

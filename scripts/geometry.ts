@@ -222,34 +222,246 @@ export function simplifyFor(raw: Raw, tolerance: number, minArea: number): any |
 }
 
 /**
+ * The lon/lat window a clip rectangle covers.
+ *
+ * Sampled around the rectangle rather than taken from its corners: Equal Earth
+ * bends meridians, so the extreme longitude on an edge is not at either end of
+ * it.
+ */
+export function lonLatWindow(
+	clip: [number, number, number, number]
+): [number, number, number, number] {
+	const [x, y, w, h] = clip;
+	let west = 180, south = 90, east = -180, north = -90;
+	const N = 24;
+	for (let i = 0; i <= N; i++) {
+		const t = i / N;
+		for (const p of [
+			[x + w * t, y],
+			[x + w * t, y + h],
+			[x, y + h * t],
+			[x + w, y + h * t]
+		]) {
+			const ll = projection.invert?.(p as [number, number]);
+			if (!ll || !Number.isFinite(ll[0]) || !Number.isFinite(ll[1])) continue;
+			if (ll[0] < west) west = ll[0];
+			if (ll[0] > east) east = ll[0];
+			if (ll[1] < south) south = ll[1];
+			if (ll[1] > north) north = ll[1];
+		}
+	}
+	return [west, south, east, north];
+}
+
+/**
+ * Drop the polygons that lie outside a lon/lat window.
+ *
+ * This is what keeps Chukotka away from a frame over Europe. Handed a country
+ * that crosses the antimeridian, d3 splits it there and traces around the pole
+ * to close the ring, which produces two rings spanning the entire map; clipped,
+ * those come back as the clip rectangle filled solid. Russia and the USA put
+ * that fake landmass over 82 of 221 pages. Restricting to what the frame can
+ * actually see removes the crossing before it can happen, and is work saved
+ * either way.
+ */
+export function restrictTo(merged: any, window: [number, number, number, number]) {
+	const [west, south, east, north] = window;
+	const overlaps = (rings: number[][][]) => {
+		let w = 180, s = 90, e = -180, n = -90;
+		for (const [lon, lat] of rings[0]) {
+			if (lon < w) w = lon;
+			if (lon > e) e = lon;
+			if (lat < s) s = lat;
+			if (lat > n) n = lat;
+		}
+		return w <= east && e >= west && s <= north && n >= south;
+	};
+
+	const geometries: any[] = [];
+	for (const geom of merged.geometries) {
+		if (geom.type === 'Polygon') {
+			if (overlaps(geom.coordinates)) geometries.push(geom);
+		} else if (geom.type === 'MultiPolygon') {
+			const kept = geom.coordinates.filter(overlaps);
+			if (kept.length) geometries.push({ type: 'MultiPolygon', coordinates: kept });
+		}
+	}
+	return geometries.length ? { type: 'GeometryCollection', geometries } : null;
+}
+
+/**
+ * Collect a geometry's projected outline, ring by ring.
+ *
+ * `geoPath` normally serialises straight to a string. Handed a context it
+ * calls back with coordinates instead, so this gets d3's projection with its
+ * adaptive resampling and antimeridian splitting intact, but in a form we can
+ * still operate on.
+ */
+function projectedRings(geom: any): number[][][] {
+	const rings: number[][][] = [];
+	let ring: number[][] = [];
+	const sink = {
+		moveTo(x: number, y: number) {
+			ring = [[x, y]];
+			rings.push(ring);
+		},
+		lineTo(x: number, y: number) {
+			ring.push([x, y]);
+		},
+		closePath() {},
+		arc() {}
+	};
+	geoPath(projection, sink as any)(geom);
+
+	// Drop rings that span most of the map. A country crossing the
+	// antimeridian is split there and closed around a pole, which d3 emits as
+	// extra rings running the full width of the world — the real landmass
+	// comes out alongside them, intact, as its own ring. Clipped, those
+	// artifacts returned the frame filled solid, putting a fake continent over
+	// the map on 82 of 221 pages. No genuine country ring is this wide.
+	const WRAPPED = WORLD_W * 0.85;
+	return rings.filter((r) => {
+		if (r.length <= 2) return false;
+		let lo = Infinity, hi = -Infinity;
+		for (const [x] of r) {
+			if (x < lo) lo = x;
+			if (x > hi) hi = x;
+		}
+		return hi - lo < WRAPPED;
+	});
+}
+
+/** Twice the signed area of a projected ring. */
+const ringArea2 = (ring: number[][]) => {
+	let a = 0;
+	for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+		a += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+	}
+	return a;
+};
+
+/** Even-odd point-in-polygon over a set of projected rings. */
+function containsPoint(rings: number[][][], [px, py]: [number, number]) {
+	let inside = false;
+	for (const ring of rings) {
+		for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+			const [xi, yi] = ring[i];
+			const [xj, yj] = ring[j];
+			if (yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) {
+				inside = !inside;
+			}
+		}
+	}
+	return inside;
+}
+
+/** Sutherland-Hodgman against one half-plane. */
+function clipHalf(
+	ring: number[][],
+	inside: (p: number[]) => boolean,
+	cut: (a: number[], b: number[]) => number[]
+): number[][] {
+	const out: number[][] = [];
+	for (let i = 0; i < ring.length; i++) {
+		const a = ring[(i + ring.length - 1) % ring.length];
+		const b = ring[i];
+		const bIn = inside(b);
+		if (bIn !== inside(a)) out.push(cut(a, b));
+		if (bIn) out.push(b);
+	}
+	return out;
+}
+
+/** Clip a projected ring to a rectangle. */
+function clipRing(ring: number[][], clip: [number, number, number, number]) {
+	const [x, y, w, h] = clip;
+	const x1 = x + w;
+	const y1 = y + h;
+	const lerpY = (a: number[], b: number[], k: number) => [
+		k,
+		a[1] + ((k - a[0]) / (b[0] - a[0])) * (b[1] - a[1])
+	];
+	const lerpX = (a: number[], b: number[], k: number) => [
+		a[0] + ((k - a[1]) / (b[1] - a[1])) * (b[0] - a[0]),
+		k
+	];
+
+	let r = ring;
+	r = clipHalf(r, (p) => p[0] >= x, (a, b) => lerpY(a, b, x));
+	if (!r.length) return r;
+	r = clipHalf(r, (p) => p[0] <= x1, (a, b) => lerpY(a, b, x1));
+	if (!r.length) return r;
+	r = clipHalf(r, (p) => p[1] >= y, (a, b) => lerpX(a, b, y));
+	if (!r.length) return r;
+	return clipHalf(r, (p) => p[1] <= y1, (a, b) => lerpX(a, b, y1));
+}
+
+/**
  * Project simplified geometry to a path string.
  *
  * `clip` is a rectangle in world space. Without it a country that merely
  * clips the corner of the frame still ships its whole coastline: Venezuela
- * drawn at Aruba's zoom cost 14kb to render a sliver. d3 post-clips in
- * projected space, so only what is on screen reaches the path.
+ * drawn at Aruba's zoom cost 14kb to render a sliver.
+ *
+ * The clip is applied to projected coordinates rather than through
+ * `projection.clipExtent`, which clips on the sphere. That path cannot cope
+ * with our simplified rings — simplification perturbs a ring just enough that
+ * d3 decides the clip rectangle lies inside the country, and returns the
+ * rectangle filled solid. Russia and the USA did that on 82 of 221 pages,
+ * covering the entire map with a fake landmass. Unsimplified geometry clips
+ * fine, which is what makes it so easy to miss.
  */
 export function renderShape(
 	merged: any,
 	opts: { digits: number; clip?: [number, number, number, number] }
 ): Geom | null {
-	if (opts.clip) {
-		const [x, y, w, h] = opts.clip;
-		projection.clipExtent([[x, y], [x + w, y + h]]);
-	} else {
-		projection.clipExtent(null);
-	}
-	try {
-		const pathGen = geoPath(projection).digits(opts.digits);
+	const pathGen = geoPath(projection).digits(opts.digits);
+	if (!opts.clip) {
 		const d = pathGen(merged);
 		if (!d) return null;
-
 		const [[x0, y0], [x1, y1]] = pathGen.bounds(merged);
 		if (!Number.isFinite(x0)) return null;
 		return { d, bbox: [x0, y0, x1, y1] };
-	} finally {
-		projection.clipExtent(null);
 	}
+
+	const k = Math.pow(10, opts.digits);
+	const round = (v: number) => Math.round(v * k) / k;
+
+	let d = '';
+	let area = 0;
+	let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+	const rings = projectedRings(merged);
+	for (const ring of rings) {
+		const c = clipRing(ring, opts.clip);
+		if (c.length < 3) continue;
+		area += ringArea2(c);
+		for (let i = 0; i < c.length; i++) {
+			const px = round(c[i][0]);
+			const py = round(c[i][1]);
+			if (px < x0) x0 = px;
+			if (px > x1) x1 = px;
+			if (py < y0) y0 = py;
+			if (py > y1) y1 = py;
+			d += (i ? 'L' : 'M') + px + ',' + py;
+		}
+		d += 'Z';
+	}
+
+	if (!d) return null;
+
+	// A clipped country may legitimately fill the frame — Italy does on the
+	// Vatican's page. It may also fill it because the projection wrapped it
+	// around the globe, which is what an antimeridian crossing does to the
+	// USA over the Caribbean or Kiribati over French Polynesia. The two look
+	// identical in the output and opposite on the map, so ask which it is:
+	// genuine enclosure means the frame's centre lies inside the country.
+	const [cx, cy, cw, chh] = opts.clip;
+	if (Math.abs(area) > 2 * 0.97 * cw * chh) {
+		const centre: [number, number] = [cx + cw / 2, cy + chh / 2];
+		if (!containsPoint(rings, centre)) return null;
+	}
+
+	return { d, bbox: [x0, y0, x1, y1] };
 }
 
 /** Simplify, project and serialise one country at a given accuracy. */

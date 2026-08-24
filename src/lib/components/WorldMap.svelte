@@ -160,7 +160,7 @@
 		position: relative;
 		aspect-ratio: 64 / 46;
 		width: 100%;
-		background: var(--paper-2);
+		background: var(--water);
 		border: 1px solid var(--rule);
 		border-radius: var(--radius);
 		overflow: hidden;
@@ -173,15 +173,15 @@
 	}
 
 	.other {
-		fill: var(--rule);
-		stroke: var(--paper-2);
+		fill: var(--land);
+		stroke: var(--water);
 		stroke-width: 0.35;
 		vector-effect: non-scaling-stroke;
 	}
 
 	.neighbor {
-		fill: color-mix(in oklab, var(--accent) 16%, var(--rule));
-		stroke: var(--paper-2);
+		fill: color-mix(in oklab, var(--accent) 16%, var(--land));
+		stroke: var(--water);
 		stroke-width: 0.35;
 		vector-effect: non-scaling-stroke;
 		cursor: pointer;
@@ -190,7 +190,7 @@
 
 	.neighbor:hover,
 	.neighbor:focus-visible {
-		fill: color-mix(in oklab, var(--accent) 38%, var(--rule));
+		fill: color-mix(in oklab, var(--accent) 38%, var(--land));
 	}
 
 	/*

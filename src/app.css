@@ -18,6 +18,20 @@
 	--rule: #d7dae0;
 	--field-ink: #ffffff;
 
+	/* Map ground. Land is lighter than water in both themes — the atlas
+	   convention, and the only arrangement that lets the water actually hold
+	   a blue. Before, land and water were 1.20:1 apart and the coastline was
+	   guesswork; they are now about 1.5:1.
+
+	   The blue lives in the water and the land is left neutral, not the other
+	   way round — tinting both just made the land look like the sea. Even so
+	   the water is only faintly blue: 34 of the 250 flag accents are
+	   themselves blue, and a saturated ocean would compete with every one of
+	   them. Its chroma is an order of magnitude below a typical accent's, so
+	   the country still owns the only real colour on the page. */
+	--water: #a6c9e9;
+	--land: #ebedf0;
+
 	--accent: #14161a;
 	--field: #d7dae0;
 
@@ -45,6 +59,8 @@
 		--ink-2: #a7aeb9;
 		--muted: #7e8794;
 		--rule: #272b33;
+		--water: #081020;
+		--land: #31363d;
 		color-scheme: dark;
 	}
 }
@@ -56,6 +72,8 @@
 	--ink-2: #a7aeb9;
 	--muted: #7e8794;
 	--rule: #272b33;
+	--water: #081020;
+	--land: #31363d;
 	color-scheme: dark;
 }
 

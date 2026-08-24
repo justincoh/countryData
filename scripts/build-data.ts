@@ -23,7 +23,9 @@ import {
 	DEG_PER_UNIT,
 	loadGeometry,
 	loadRaw,
+	lonLatWindow,
 	renderShape,
+	restrictTo,
 	simplifyFor,
 	type Geom,
 	WORLD_W,
@@ -248,6 +250,8 @@ async function main() {
 		const minArea = frameMinArea(span, CONTEXT_MIN_PX, VIEW_W);
 		const digits = digitsFor(span);
 
+		const window = lonLatWindow(clip);
+
 		const out: Ctx['shapes'] = [];
 		for (const [cc, bbox] of worldBoxes) {
 			if (cc === code) continue;
@@ -267,7 +271,9 @@ async function main() {
 
 			// A bbox can straddle the frame while the land itself misses it —
 			// an archipelago's bounding box spans open water. Clipping says so.
-			const clipped = renderShape(merged, { digits, clip });
+			const near = restrictTo(merged, window);
+			if (!near) continue;
+			const clipped = renderShape(near, { digits, clip });
 			if (clipped) out.push({ code: cc, d: clipped.d });
 		}
 		return out;

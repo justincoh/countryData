@@ -148,8 +148,9 @@ export type Palette = {
 	/** Dominant flag colours, most-used first, unmodified. */
 	colors: string[];
 	/** The country's signature colour: the most chromatic one in the flag.
-	    Used for the hero field, where the most *common* colour would give a
-	    white wash for Japan and every other white-ground flag. */
+	    Currently unused by the UI -- the hero used to tint its background with
+	    this, which hid sky-blue-and-white flags like Guatemala's. Kept so that
+	    experiment is one line to restore; not dead code to clean up. */
 	field: string;
 	/** Accent adjusted to clear 4.5:1 on a light surface. */
 	onLight: string;

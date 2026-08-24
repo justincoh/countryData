@@ -23,8 +23,6 @@
 	<meta property="og:title" content="{country.name} {country.flag.emoji}" />
 	<meta property="og:description" content={description} />
 	<meta property="og:type" content="website" />
-	<!-- Themed per country, so the browser chrome picks up the flag too. -->
-	<meta name="theme-color" content={country.palette.field} />
 </svelte:head>
 
 <!-- The accent is the flag's own colour, already clamped at build time to clear

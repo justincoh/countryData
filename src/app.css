@@ -3,8 +3,8 @@
  *
  * The neutral system is deliberately cool and quiet: 250 different flag
  * palettes have to sit on top of it without clashing, so the only saturated
- * colour on any page comes from the country itself. --accent and --field are
- * injected per country at render time.
+ * colour on any page comes from the country itself. --accent is injected per
+ * country at render time.
  */
 
 :root {

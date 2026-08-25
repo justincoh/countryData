@@ -3,8 +3,7 @@
  *
  * Matches native names, capitals, ISO codes and common alternates, so
  * "Holland", "Kathmandu", "Cote d'Ivoire" and "NP" all land somewhere sensible.
- * The old build regex-tested the English name only, and stripped parentheses
- * out of the query to stop the regex throwing.
+ * Matching against the English name alone would miss all four.
  */
 export type Entry = {
 	c: string;        // code

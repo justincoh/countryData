@@ -210,8 +210,8 @@
 		animation: land 0.55s var(--ease) both;
 	}
 
-	/* The country arrives rather than drawing itself. The outline used to ink
-	   itself in along the stroke; there is no stroke left to ink. */
+	/* The country arrives rather than drawing itself: with no stroke, there is
+	   nothing to ink in along, so the fill comes up instead. */
 	@keyframes land {
 		from {
 			fill-opacity: 0;

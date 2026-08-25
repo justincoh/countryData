@@ -4,6 +4,7 @@
  *   src/lib/server/data/countries.json  full records (server-only, split per
  *                                       page at prerender time)
  *   src/lib/server/data/detail.json     high-detail outline per country
+ *   src/lib/server/data/context.json    surrounding land, baked per page
  *   static/data/world.json              shared world outline, fetched once
  *   static/data/search.json             lightweight search index
  *   static/flags/<cc>.<svg|webp>        flag assets

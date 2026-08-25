@@ -1,7 +1,7 @@
 <script lang="ts">
 	/**
-	 * Units and theme. Kept deliberately quiet — the flag field is where this
-	 * design spends its attention, and preferences are set once.
+	 * Units and theme. Kept deliberately quiet — preferences are set once, and
+	 * the page's attention belongs to the country, not its controls.
 	 */
 	import { settings, setUnits, setTheme } from '$lib/settings.svelte';
 

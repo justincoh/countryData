@@ -4,8 +4,7 @@
  * Pages runs Jekyll over whatever it is given, and Jekyll silently drops paths
  * beginning with an underscore. SvelteKit emits `_app/` and `__data.json`, so
  * without .nojekyll the deployed site loads no JavaScript and no page data —
- * it fails completely rather than degrading. The old CRA build never needed
- * this because it emitted `static/`.
+ * it fails completely rather than degrading.
  *
  * CNAME has to be re-copied because the build directory is wiped each time.
  */

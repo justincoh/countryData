@@ -4,8 +4,8 @@ import type { Units } from './weather.ts';
  * Reader preferences, persisted locally.
  *
  * Units default from the browser's locale rather than being hardcoded: this is
- * a reference tool about the whole world, and the old build assumed Fahrenheit
- * for everyone.
+ * a reference tool about the whole world, and almost none of it is on
+ * Fahrenheit.
  */
 function defaultUnits(): Units {
 	if (typeof navigator === 'undefined') return 'c';

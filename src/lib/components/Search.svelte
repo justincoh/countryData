@@ -3,10 +3,8 @@
 	 * Search, as a bottom sheet.
 	 *
 	 * The trigger sits at the bottom of the screen because that is where a thumb
-	 * is; the old build anchored its input to the top of a desktop-first column.
-	 * Implemented as a real ARIA combobox with roving activedescendant, so it is
-	 * navigable by keyboard and announced correctly — the previous dropdown was
-	 * a stack of divs read via `event.target.innerText`.
+	 * is. Implemented as a real ARIA combobox with roving activedescendant, so
+	 * it is navigable by keyboard and announced correctly.
 	 */
 	import { goto } from '$app/navigation';
 	import { loadIndex, search, type Entry, type Hit } from '$lib/search';

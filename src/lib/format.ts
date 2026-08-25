@@ -4,8 +4,7 @@ import type { Units } from './weather.ts';
  * Local time at the capital.
  *
  * Formatted straight from the IANA zone, so daylight saving is handled by the
- * platform. The previous build parsed a "UTC+05:30" string by hand and ignored
- * DST entirely, putting half the world an hour out for half the year.
+ * platform rather than by parsing a fixed offset, which would ignore DST.
  */
 export const timeAt = (timezone: string, date = new Date()) =>
 	new Intl.DateTimeFormat(undefined, {

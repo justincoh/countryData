@@ -1,9 +1,9 @@
 /**
  * Current conditions from Open-Meteo.
  *
- * Keyless and CORS-open, which matters for a static site: the previous build
- * shipped an OpenWeatherMap key in the bundle, where anyone could read it.
- * There is no key here to leak.
+ * Keyless and CORS-open, which matters for a static site: there is no server
+ * to proxy a request through, so anything needing a key would have to ship it
+ * in the bundle for anyone to read.
  */
 export type Weather = {
 	temp: number;

@@ -25,6 +25,12 @@ export type FlagAsset = {
 	 * flag that does not, and an edge treatment drawn on the box would trace a
 	 * rectangle that isn't there. Detected rather than hardcoded so it stays
 	 * correct if upstream ever adds another.
+	 *
+	 * Currently unused by the UI -- FlagHero used to draw a hairline ring and
+	 * shadow on rectangular flags, which gave white-field flags like Japan's a
+	 * boundary against light paper. Kept so that treatment is one class binding
+	 * away; not dead code to clean up. The 2% threshold below is tuned, and is
+	 * the part that would be tedious to rediscover.
 	 */
 	rectangular: boolean;
 };

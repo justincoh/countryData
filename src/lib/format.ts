@@ -45,3 +45,34 @@ export function coords([lat, lon]: [number, number]) {
 		`${Math.abs(v).toFixed(2)}° ${v >= 0 ? pos : neg}`;
 	return `${fmt(lat, 'N', 'S')}, ${fmt(lon, 'E', 'W')}`;
 }
+
+/**
+ * The year-round UTC offset, for text baked into the build.
+ *
+ * `offsetFrom` is relative to the reader and so cannot be prerendered; a live
+ * absolute offset cannot either, because a share card is scraped once and
+ * cached, and would then read an hour wrong for half the year. This reports
+ * standard time instead. DST only ever moves clocks forward, so the standard
+ * offset is the smaller of the January and July offsets — which holds in the
+ * southern hemisphere too, where January is the DST half.
+ */
+export function standardOffset(timezone: string): string {
+	const at = (month: number) => {
+		const parts = new Intl.DateTimeFormat('en-US', {
+			timeZone: timezone,
+			timeZoneName: 'shortOffset'
+		}).formatToParts(new Date(Date.UTC(2024, month, 1, 12)));
+		const name = parts.find((p) => p.type === 'timeZoneName')?.value ?? 'GMT';
+		const m = name.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+		if (!m) return 0;
+		return (m[1] === '-' ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] ?? 0));
+	};
+
+	const mins = Math.min(at(0), at(6));
+	if (mins === 0) return 'UTC';
+	const sign = mins > 0 ? '+' : '\u2212';
+	const abs = Math.abs(mins);
+	const h = Math.floor(abs / 60);
+	const m = abs % 60;
+	return `UTC${sign}${h}${m ? `:${String(m).padStart(2, '0')}` : ''}`;
+}

@@ -8,6 +8,7 @@
  *   static/data/world.json              shared world outline, fetched once
  *   static/data/search.json             lightweight search index
  *   static/flags/<cc>.<svg|webp>        flag assets
+ *   static/og/<cc>.png                  OpenGraph share card
  *
  * Run with `yarn refresh-data`. Sources are cached in .cache/ and the upstream
  * geometry repo is pinned to a commit, so reruns are deterministic.
@@ -34,6 +35,7 @@ import {
 } from './geometry.ts';
 import { BUILD_PAD, VIEW_W, frameOf, inFrame, type Box } from '../src/lib/frame.ts';
 import { buildFlag, extractPalette, type Palette } from './flags.ts';
+import { buildOgCards } from './og.ts';
 
 const SERVER_DATA = path.resolve('src/lib/server/data');
 const STATIC_DATA = path.resolve('static/data');
@@ -345,6 +347,9 @@ async function main() {
 		await writeFile(file, body);
 		console.log(`  ${label.padEnd(28)} ${pretty(body.length).padStart(7)} raw  ${pretty(gzipSync(body).length).padStart(7)} gzip`);
 	};
+
+	console.log('\nShare cards');
+	await buildOgCards(countries);
 
 	console.log('\nArtefacts');
 	await write(path.join(SERVER_DATA, 'countries.json'), countries, 'countries.json (server)');

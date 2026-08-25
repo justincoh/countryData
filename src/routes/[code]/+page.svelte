@@ -5,24 +5,44 @@
 	import WorldMap from '$lib/components/WorldMap.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Settings from '$lib/components/Settings.svelte';
+	import * as fmt from '$lib/format';
+	import { ORIGIN } from '$lib/site';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	const country = $derived(data.country);
 
+	// Ordered most-specific first: Slack and iMessage clamp the card to two
+	// lines, so capital and population have to survive the truncation.
 	const description = $derived(
-		`${country.name}: capital ${country.capital ?? 'n/a'}, ` +
-			`${country.population ? country.population.toLocaleString() + ' people' : ''}` +
-			`. Local time, current weather, languages and neighbours.`
+		[
+			country.capital && `Capital: ${country.capital}`,
+			country.population && `Population ${country.population.toLocaleString()}`,
+			`Timezone: ${fmt.standardOffset(country.timezone)}`,
+			country.subregion,
+			country.languages.join(', ')
+		]
+			.filter(Boolean)
+			.join(', ') + ' — click for more'
 	);
+
+	const card = $derived(`${ORIGIN}/og/${country.code}.png`);
 </script>
 
 <svelte:head>
 	<title>{country.name} — Countries</title>
 	<meta name="description" content={description} />
-	<meta property="og:title" content="{country.name} {country.flag.emoji}" />
+	<meta property="og:title" content={country.name} />
 	<meta property="og:description" content={description} />
 	<meta property="og:type" content="website" />
+	<meta property="og:url" content="{ORIGIN}/{country.code}/" />
+	<!-- Absolute, and a real raster: scrapers ignore a relative path and every
+	     major one rejects SVG, so the card is baked by scripts/og.ts. -->
+	<meta property="og:image" content={card} />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image:alt" content="Flag of {country.name}" />
+	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <!-- The accent is the flag's own colour, already clamped at build time to clear

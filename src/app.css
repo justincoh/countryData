@@ -33,6 +33,10 @@
 
 	--accent: #14161a;
 
+	/* Hairline for a flag whose own edge disappears into the page. Derived from
+	   --ink, so it is a dark line on light paper and a light one on dark. */
+	--edge-ink: color-mix(in oklab, var(--ink) 22%, transparent);
+
 	--sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--cond: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;

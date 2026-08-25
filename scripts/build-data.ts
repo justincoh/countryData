@@ -63,7 +63,7 @@ export type Country = {
 	demonym: string | null;
 	landlocked: boolean;
 	borders: string[];     // cca2 codes, lowercased
-	flag: { src: string; ratio: number; emoji: string; rectangular: boolean };
+	flag: { src: string; ratio: number; emoji: string; edge: { onLight: boolean; onDark: boolean } };
 	palette: Palette;
 };
 
@@ -161,7 +161,7 @@ async function main() {
 				src: `/flags/${code}.${asset.ext}`,
 				ratio: asset.ratio,
 				emoji: c.flag,
-				rectangular: asset.rectangular
+				edge: asset.edge
 			},
 			palette
 		});

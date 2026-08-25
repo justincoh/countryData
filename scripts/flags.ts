@@ -26,14 +26,75 @@ export type FlagAsset = {
 	 * rectangle that isn't there. Detected rather than hardcoded so it stays
 	 * correct if upstream ever adds another.
 	 *
-	 * Currently unused by the UI -- FlagHero used to draw a hairline ring and
-	 * shadow on rectangular flags, which gave white-field flags like Japan's a
-	 * boundary against light paper. Kept so that treatment is one class binding
-	 * away; not dead code to clean up. The 2% threshold below is tuned, and is
-	 * the part that would be tedious to rediscover.
+	 * Build-time only -- it gates `edge` below rather than shipping to the app.
 	 */
 	rectangular: boolean;
+	/**
+	 * Whether the hero needs to draw this flag an edge, per theme. See
+	 * `edgeVanishes`.
+	 */
+	edge: { onLight: boolean; onDark: boolean };
 };
+
+/* The two page grounds a flag can sit on, from --paper in app.css. Duplicated
+   because the build cannot read the stylesheet; they move about once a year and
+   a drift here only softens a hairline, so a shared token is not worth the
+   indirection. */
+const PAPER_LIGHT: RGB = [0xf4, 0xf5, 0xf7];
+const PAPER_DARK: RGB = [0x10, 0x12, 0x16];
+
+/** Below this contrast against the page, a flag's own edge reads as no edge. */
+const EDGE_MIN_CONTRAST = 1.5;
+/** How much of the perimeter has to vanish before the hero draws one. */
+const EDGE_FAINT_SHARE = 0.12;
+
+/**
+ * Does this flag's own boundary disappear into `bg`?
+ *
+ * Angola's lower half is black and vanishes on dark paper; Japan's field is
+ * white and vanishes on light. Both need a drawn hairline, and neither needs
+ * one in the other theme, so this is asked once per theme.
+ *
+ * Sampled two pixels in from the bounding box, clear of the antialiased outer
+ * edge, and judged on the share of the perimeter that vanishes rather than the
+ * average: a flag whose white stripe merely reaches the edge still loses that
+ * stretch of its outline. Both thresholds are tuned -- at a 1.5 cut the dark
+ * count runs 34 to 97 across cuts from 1.25 to 2.0, so they are not arbitrary
+ * and not obvious.
+ */
+async function edgeVanishes(svg: Buffer, bg: RGB): Promise<boolean> {
+	const W = 96, H = 64, INSET = 2;
+	const { data, info } = await sharp(svg, { density: 150 })
+		.resize({ width: W, height: H, fit: 'fill' })
+		.ensureAlpha()
+		.raw()
+		.toBuffer({ resolveWithObject: true });
+
+	const at = (x: number, y: number): RGB | null => {
+		const i = (y * info.width + x) * info.channels;
+		// Nepal's transparent corners are not edge, they are absence of flag.
+		if (data[i + 3] < 128) return null;
+		return [data[i], data[i + 1], data[i + 2]];
+	};
+
+	const ring: RGB[] = [];
+	for (let x = INSET; x < W - INSET; x++) {
+		for (const y of [INSET, H - 1 - INSET]) {
+			const p = at(x, y);
+			if (p) ring.push(p);
+		}
+	}
+	for (let y = INSET; y < H - INSET; y++) {
+		for (const x of [INSET, W - 1 - INSET]) {
+			const p = at(x, y);
+			if (p) ring.push(p);
+		}
+	}
+	if (!ring.length) return false;
+
+	const faint = ring.filter((c) => contrast(c, bg) < EDGE_MIN_CONTRAST).length;
+	return faint / ring.length >= EDGE_FAINT_SHARE;
+}
 
 /** True when a meaningful share of the bounding box is transparent. */
 async function isRectangular(svg: Buffer): Promise<boolean> {
@@ -64,8 +125,17 @@ export async function buildFlag(svg: Buffer): Promise<FlagAsset> {
 	const ratio = (meta.width ?? 3) / (meta.height ?? 2);
 	const rectangular = await isRectangular(svg);
 
+	// A ring is drawn on the bounding box, so a flag that does not fill its own
+	// box never gets one however faint its edge is.
+	const edge = rectangular
+		? {
+				onLight: await edgeVanishes(svg, PAPER_LIGHT),
+				onDark: await edgeVanishes(svg, PAPER_DARK)
+			}
+		: { onLight: false, onDark: false };
+
 	if (gzipSync(Buffer.from(optimized)).length <= RASTER_THRESHOLD) {
-		return { ext: 'svg', body: Buffer.from(optimized), ratio, rectangular };
+		return { ext: 'svg', body: Buffer.from(optimized), ratio, rectangular, edge };
 	}
 
 	const webp = await sharp(svg, { density: 300 })
@@ -74,7 +144,7 @@ export async function buildFlag(svg: Buffer): Promise<FlagAsset> {
 		// its shape instead of gaining a black box.
 		.webp({ quality: 82, effort: 6, alphaQuality: 100 })
 		.toBuffer();
-	return { ext: 'webp', body: webp, ratio, rectangular };
+	return { ext: 'webp', body: webp, ratio, rectangular, edge };
 }
 
 /* ---------------------------------------------------------------- palette */

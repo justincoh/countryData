@@ -21,6 +21,6 @@ export type Country = {
 	demonym: string | null;
 	landlocked: boolean;
 	borders: string[];
-	flag: { src: string; ratio: number; emoji: string; rectangular: boolean };
+	flag: { src: string; ratio: number; emoji: string; edge: { onLight: boolean; onDark: boolean } };
 	palette: Palette;
 };

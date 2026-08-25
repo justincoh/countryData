@@ -20,6 +20,7 @@ const PRECACHE = [
 			f.startsWith('/fonts/') ||
 			f === '/data/world.json' ||
 			f === '/data/search.json' ||
+			f === '/texture.webp' ||
 			f === '/manifest.webmanifest' ||
 			f === '/favicon.svg'
 	)

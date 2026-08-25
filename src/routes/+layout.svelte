@@ -16,4 +16,6 @@
 	});
 </script>
 
+<div class="texture" aria-hidden="true"></div>
+
 {@render children()}

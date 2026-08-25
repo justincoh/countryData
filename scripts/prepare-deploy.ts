@@ -24,7 +24,7 @@ async function main() {
 	await copyFile(path.resolve('CNAME'), path.join(BUILD, 'CNAME'));
 
 	console.log('  build/.nojekyll  (keeps Jekyll from stripping _app/)');
-	console.log('  build/CNAME      (countries.justinjoyce.dev)');
+	console.log('  build/CNAME      (slimatlas.com)');
 }
 
 main().catch((err) => {

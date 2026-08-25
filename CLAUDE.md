@@ -79,8 +79,30 @@ a fake continent over the whole map on 82 of 221 pages. It had survived
 eyeballing precisely because it looked like a plausible landmass. Anything that
 can be reduced to a number about the geometry should be.
 
-## Unfinished business on `main`
+## The custom domain lives in `CNAME`, not in the GitHub UI
 
-`src/constants.js` on `main` contains a live OpenWeatherMap API key. This
-branch deletes the file, but the key remains in git history and should be
-revoked at the provider.
+`yarn deploy` runs `gh-pages -t`, which force-pushes and replaces the whole
+`gh-pages` branch. Setting a custom domain in the GitHub Pages UI writes a
+`CNAME` file to that branch, so the next deploy silently reverts the domain.
+The repo's `CNAME` file is the only durable place to set it; `prepare-deploy`
+copies it into every build.
+
+## Re-pointing the domain at DreamHost
+
+DNS for `slimatlas.com` is at DreamHost, and it is an *apex* domain, so it
+needs four A records to GitHub's Pages IPs — a CNAME is not legal at the apex.
+DreamHost refuses to add an apex A record while the domain is "Fully Hosted":
+it has to be set to **DNS Only** first, which is not signposted in the panel
+and looks like a permissions bug rather than a hosting-type conflict.
+
+`www` is a CNAME to `justincoh.github.io.`; GitHub creates the apex/`www`
+redirect itself once both exist.
+
+Changing the domain invalidates the Let's Encrypt certificate, so "Enforce
+HTTPS" unticks itself and cannot be re-enabled until the new cert is issued.
+
+## Unfinished business
+
+`src/constants.js` contained a live OpenWeatherMap API key. The rebuild deleted
+the file, but the key remains reachable in git history and should be revoked at
+the provider.

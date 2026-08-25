@@ -16,7 +16,6 @@
 	--ink-2: #4a5058;
 	--muted: #767d87;
 	--rule: #d7dae0;
-	--field-ink: #ffffff;
 
 	/* Map ground. Land is lighter than water in both themes — the atlas
 	   convention, and the only arrangement that lets the water actually hold
@@ -33,7 +32,6 @@
 	--land: #ebedf0;
 
 	--accent: #14161a;
-	--field: #d7dae0;
 
 	--sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--cond: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;

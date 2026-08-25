@@ -42,5 +42,5 @@ export const getContext = (code: string): Context | null =>
 export const getNeighbor = (code: string) => {
 	const c = byCode.get(code);
 	if (!c) return null;
-	return { code: c.code, name: c.name, emoji: c.flag.emoji, accent: c.palette.colors[0] };
+	return { code: c.code, name: c.name, emoji: c.flag.emoji };
 };

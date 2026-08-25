@@ -89,11 +89,17 @@ copies it into every build.
 
 ## Re-pointing the domain at DreamHost
 
-DNS for `slimatlas.com` is at DreamHost, and it is an *apex* domain, so it
-needs four A records to GitHub's Pages IPs — a CNAME is not legal at the apex.
-DreamHost refuses to add an apex A record while the domain is "Fully Hosted":
-it has to be set to **DNS Only** first, which is not signposted in the panel
-and looks like a permissions bug rather than a hosting-type conflict.
+DNS for `slimatlas.com` is at DreamHost, and it is an *apex* domain, so a
+plain CNAME is not legal there. DreamHost supports `ALIAS`, which GitHub Pages
+accepts and which is the route used here: an ALIAS at the apex to
+`justincoh.github.io.`, tracking whatever IPs GitHub is on rather than pinning
+the four `185.199.10[8-11].153` literals. Prefer it to A records for that
+reason. It may not synthesize AAAA, so the apex can end up IPv4-only.
+
+DreamHost refuses to point the apex away from its own webservers while the
+domain is "Fully Hosted" — it has to be **DNS Only** first. That presents as a
+permissions failure rather than a hosting-type conflict, so it is easy to
+misread.
 
 `www` is a CNAME to `justincoh.github.io.`; GitHub creates the apex/`www`
 redirect itself once both exist.

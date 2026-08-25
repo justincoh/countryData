@@ -37,13 +37,6 @@
 	   --ink, so it is a dark line on light paper and a light one on dark. */
 	--edge-ink: color-mix(in oklab, var(--ink) 22%, transparent);
 
-	/* Page grain. The mask records where the concrete is darker than its own
-	   average, so this colour is what that darkness is painted in — near-black
-	   on light paper, and flipped to a light speckle on dark, where a dark one
-	   would be invisible. Dark carries less: an unlit screen shows noise far
-	   more readily than a lit one. */
-	--texture: rgb(0 0 0 / 0.1);
-
 	--sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--cond: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -70,7 +63,6 @@
 		--rule: #272b33;
 		--water: #081020;
 		--land: #31363d;
-		--texture: rgb(255 255 255 / 0.035);
 		color-scheme: dark;
 	}
 }
@@ -84,7 +76,6 @@
 	--rule: #272b33;
 	--water: #081020;
 	--land: #31363d;
-	--texture: rgb(255 255 255 / 0.035);
 	color-scheme: dark;
 }
 
@@ -129,28 +120,6 @@ button {
 	border: 0;
 	padding: 0;
 	cursor: pointer;
-}
-
-/*
- * The grain, as one fixed layer behind everything.
- *
- * Fixed rather than tiled down the document so it does not slide against the
- * content as the page scrolls — the paper stays still and the words move over
- * it. A mask rather than an image, so the one asset can be painted in either
- * polarity; see scripts/texture.ts.
- */
-.texture {
-	position: fixed;
-	inset: 0;
-	z-index: -1;
-	pointer-events: none;
-	background: var(--texture);
-	-webkit-mask-image: url('/texture.webp');
-	mask-image: url('/texture.webp');
-	-webkit-mask-size: 400px 400px;
-	mask-size: 400px 400px;
-	-webkit-mask-repeat: repeat;
-	mask-repeat: repeat;
 }
 
 /* A single visible focus treatment everywhere, since the app is heavily

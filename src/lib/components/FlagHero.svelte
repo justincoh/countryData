@@ -35,8 +35,7 @@
 		place-items: center;
 		padding: clamp(1.75rem, 9vw, 3.5rem) var(--gutter);
 		padding-top: max(clamp(1.75rem, 9vw, 3.5rem), env(safe-area-inset-top));
-		/* No background of its own -- body already paints --paper, and an
-		   opaque repeat here would cover the grain behind the flag. */
+		background: var(--paper);
 	}
 
 	.flag {

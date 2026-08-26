@@ -1,9 +1,7 @@
-# Slim Atlas
+# Slim Atlas - https://slimatlas.com/
 
 Look up any country: flag, map, local time, current weather, languages and
 neighbours.
-
-**https://slimatlas.com/
 
 Every country is a prerendered static page — `/np/`, `/br/`, `/xk/` — so a page
 arrives as ~4kb of HTML with its content already in the markup, and the whole

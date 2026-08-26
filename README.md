@@ -1,7 +1,13 @@
 # [Slim Atlas](https://slimatlas.com/)
 
 Get a quick overview of any country: flag, map, local time, current weather, languages and
-neighbours.
+neighbors.
+
+<img width="24%" alt="panama" src="https://github.com/user-attachments/assets/2239b606-52cb-4274-b936-d57f47fc2b8a" />
+<img width="24%" alt="bhutan" src="https://github.com/user-attachments/assets/1dd34536-b927-4271-b546-75fd3d45fb1c" />
+<img width="24%" alt="micronesia" src="https://github.com/user-attachments/assets/f75bfb93-0547-4c1f-a4ae-b4c6ad000202" />
+<img width="24%" alt="marshall islands" src="https://github.com/user-attachments/assets/43a7fe64-247b-4a7d-b2f8-623b6b58c896" />
+
 
 Every country is a prerendered static page — `/np/`, `/br/`, `/xk/` — so a page
 arrives as ~4kb of HTML with its content already in the markup, and the whole

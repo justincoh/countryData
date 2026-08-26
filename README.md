@@ -1,6 +1,6 @@
 # [Slim Atlas](https://slimatlas.com/)
 
-Look up any country: flag, map, local time, current weather, languages and
+Get a quick overview of any country: flag, map, local time, current weather, languages and
 neighbours.
 
 Every country is a prerendered static page — `/np/`, `/br/`, `/xk/` — so a page
@@ -27,12 +27,6 @@ mobile-first layout.
 Nothing about a country is fetched at runtime. Names, flags, borders, geometry
 and populations are baked into the build; the only live call the deployed site
 makes is for current weather.
-
-This is deliberate. REST Countries — which the previous version of this app
-called on every page load — has broken it three times: a v2 field change, the
-v2 retirement, and v3.1 now being deprecated in favour of a paywalled v5. A
-country's borders and languages change on a timescale of years, so they belong
-in the build, not in a request.
 
 ```sh
 yarn refresh-data   # re-pull sources and rebuild the baked artefacts

@@ -1,4 +1,4 @@
-# Slim Atlas - https://slimatlas.com/
+# [Slim Atlas](https://slimatlas.com/)
 
 Look up any country: flag, map, local time, current weather, languages and
 neighbours.

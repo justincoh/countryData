@@ -3,10 +3,12 @@
 Get a quick overview of any country: flag, map, local time, current weather, languages and
 neighbors.
 
+A few examples, with some of my favorite flags:
+
 <img width="24%" alt="panama" src="https://github.com/user-attachments/assets/2239b606-52cb-4274-b936-d57f47fc2b8a" />
 <img width="24%" alt="bhutan" src="https://github.com/user-attachments/assets/1dd34536-b927-4271-b546-75fd3d45fb1c" />
+<img width="24%" alt="Rwanda — Countries" src="https://github.com/user-attachments/assets/c8e30650-06b6-49d3-9bb8-2fb1e6582773" />
 <img width="24%" alt="micronesia" src="https://github.com/user-attachments/assets/f75bfb93-0547-4c1f-a4ae-b4c6ad000202" />
-<img width="24%" alt="marshall islands" src="https://github.com/user-attachments/assets/43a7fe64-247b-4a7d-b2f8-623b6b58c896" />
 
 
 Every country is a prerendered static page — `/np/`, `/br/`, `/xk/` — so a page
@@ -25,8 +27,7 @@ yarn build        # -> build/
 yarn preview      # serve the built site
 ```
 
-`yarn dev --host` exposes it on the LAN, which is the honest way to check a
-mobile-first layout.
+`yarn dev --host` exposes it on the LAN, for verification on mobile.
 
 ## Data
 
@@ -55,9 +56,7 @@ Delete it to force a fresh pull.
 - **Weather and map framing use the capital, not the country centroid.** The
   centroid of Russia is 3,579km from Moscow and the centroid of the USA is
   1,740km from Washington, so centroid weather reports conditions in empty
-  taiga and rural Kansas. Capitals resolve automatically for 214 of 250; the
-  rest are small territories where the centroid is within ~12km anyway, with
-  hand-checked overrides for the two cases where it is not.
+  taiga and rural Kansas.
 - **Local time comes from the capital's IANA zone**, so DST is handled and
   quarter-hour offsets are right. Kathmandu really is 45 minutes past.
 - **Population is World Bank, currently 2025 figures**, rather than the numbers
@@ -67,13 +66,8 @@ Delete it to force a fresh pull.
 
 Outlines are projected to Equal Earth at build time and shipped as static SVG
 path strings in one shared coordinate space, so the browser runs no projection
-maths. Flying to a country animates a `viewBox` — four numbers interpolating —
+math. Flying to a country animates a `viewBox` — four numbers interpolating —
 rather than fetching map tiles. The whole world is 46kb, cached once.
-
-Simplification scales with a country's angular extent rather than being fixed,
-since every country is framed to fill roughly the same screen area. Canada gets
-simplified far harder than Luxembourg and both land at comparable on-screen
-accuracy; without it Canada's outline alone costs 53kb.
 
 ## Deploying
 

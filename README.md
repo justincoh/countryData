@@ -87,5 +87,5 @@ The `-t` flag on `gh-pages` is load-bearing: without it dotfiles are skipped,
 exists to prevent.
 
 The custom domain is the only supported target. Serving from
-`justincoh.github.io/countryData` as well would need a different base path, and
+`justincoh.github.io/slimatlas` as well would need a different base path, and
 one build cannot satisfy both.

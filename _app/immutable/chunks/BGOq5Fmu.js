@@ -1,0 +1,1 @@
+import{K as e,L as t,M as n,X as r,Y as i,_ as a,b as o,q as s,v as c}from"./Z4fd9Zr3.js";import"./xihTtKlq.js";var l=o(`<footer class="svelte-jz8lnl"> <a href="https://justinjoyce.dev/projects/" class="svelte-jz8lnl">Justin Joyce</a></footer>`);function u(o,u){s(u,!0);let d=new Date().getFullYear();var f=l(),p=t(f);i(),r(f),n(()=>a(p,`© ${d??``} `)),c(o,f),e()}export{u as t};

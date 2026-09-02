@@ -9,6 +9,7 @@
 	 *
 	 * Without JavaScript it degrades to a normal page with a link.
 	 */
+	import Footer from '$lib/components/Footer.svelte';
 	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
 
@@ -30,6 +31,8 @@
 	<h1>Countries</h1>
 	<p>Flag, map, local time and current weather for anywhere in the world.</p>
 	<a href="/{data.fallback.code}/">Start with {data.fallback.name} {data.fallback.flag.emoji}</a>
+
+	<Footer />
 </main>
 
 <style>

@@ -5,6 +5,7 @@
 	import WorldMap from '$lib/components/WorldMap.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Settings from '$lib/components/Settings.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 	import * as fmt from '$lib/format';
 	import { ORIGIN } from '$lib/site';
 	import type { PageData } from './$types';
@@ -97,6 +98,8 @@
 				</p>
 			{/if}
 		</section>
+
+		<Footer />
 	</main>
 
 	<Search current={country.code} />

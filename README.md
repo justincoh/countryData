@@ -8,7 +8,8 @@ A few examples, with some of my favorite flags:
 <img width="24%" alt="panama" src="https://github.com/user-attachments/assets/2239b606-52cb-4274-b936-d57f47fc2b8a" />
 <img width="24%" alt="bhutan" src="https://github.com/user-attachments/assets/1dd34536-b927-4271-b546-75fd3d45fb1c" />
 <img width="24%" alt="Rwanda — Countries" src="https://github.com/user-attachments/assets/c8e30650-06b6-49d3-9bb8-2fb1e6582773" />
-<img width="24%" alt="micronesia" src="https://github.com/user-attachments/assets/f75bfb93-0547-4c1f-a4ae-b4c6ad000202" />
+<img width="24%" alt="sri lanka" src="https://github.com/user-attachments/assets/e100a49f-98c2-4bff-8b97-64ef1ed46492" />
+
 
 
 Every country is a prerendered static page — `/np/`, `/br/`, `/xk/` — so a page
